@@ -1,0 +1,2 @@
+﻿Get-LocalGroup 4
+Get-LocalGroupMember 4
