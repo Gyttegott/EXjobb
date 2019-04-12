@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace ES_PS_analyzer
 {
@@ -53,15 +54,15 @@ namespace ES_PS_analyzer
             return JsonConvert.DeserializeObject<List<PSDoc>>(searchobj["hits"]["hits"].ToString());
         }
 
-        public PSDoc GetLastCommand(string HostName)
+        public async Task<PSDoc> GetLastCommand(string HostName)
         {
-            var res = Client.Search<StringResponse>("logstash-*", string.Format(@"
+            var res = await Client.SearchAsync<StringResponse>("logstash-*", string.Format(@"
 {{
     ""from"": 0,
     ""size"": 1,
     ""query"": {{
         ""bool"": {{
-            ""should"": [
+            ""must"": [
                 {{
                     ""match"": {{
                         ""source_name"": ""PowerShell""

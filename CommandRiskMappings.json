@@ -1,0 +1,184 @@
+﻿[
+  {
+    "Command": "Get-LocalGroup",
+    "BaseRisk": 2
+  },
+  {
+    "Command": "Get-LocalGroupMember",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-Name[ \"]*(A|a)dmin",
+        "Location": "parameter",
+        "RiskAddition": 4
+      }
+    ]
+  },
+  {
+    "Command": "Get-ChildItem",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-Path.*\\\\Start Menu\\\\Programs\\\\Startup",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*C:\\\\Users$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      }
+    ]
+  },
+  {
+    "Command": "Add-Type",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-AssemblyName.*System.Security",
+        "Location": "parameter",
+        "RiskAddition": 8
+      }
+    ]
+  },
+  {
+    "Command": "Set-ExecutionPolicy",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Bypass",
+        "Location": "parameter",
+        "RiskAddition": 8
+      },
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Unrestricted",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },
+  {
+    "Command": "systeminfo.exe",
+    "BaseRisk": 2
+  },
+  {
+    "Command": "ipconfig.exe",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/all$",
+        "Location": "parameter",
+        "RiskAddition": 4
+      }
+    ]
+  },
+  {
+    "Command": "reg.exe",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "query",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "password",
+        "Location": "parameter",
+        "RiskAddition": 4
+      }
+    ]
+  },
+  {
+    "Command": "net.exe",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^user$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "^accounts$",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "^Administrat(o|ö)r$",
+        "Location": "parameter",
+        "RiskAddition": 4
+      }
+    ]
+  },
+  {
+    "Command": "whoami.exe",
+    "BaseRisk": 1,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/all$",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },
+  {
+    "Command": "findstr.exe",
+    "BaseRisk": 4,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/.*s",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "^/.*i",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "^password$",
+        "Location": "parameter",
+        "RiskAddition": 6
+      }
+    ]
+  },
+  {
+    "Command": "dir.exe",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "pass",
+        "Location": "parameter",
+        "RiskAddition": 3
+      },
+      {
+        "Type": "regex",
+        "Value": "cred",
+        "Location": "parameter",
+        "RiskAddition": 3
+      },
+      {
+        "Type": "regex",
+        "Value": "config",
+        "Location": "parameter",
+        "RiskAddition": 3
+      }
+    ]
+  }
+]
