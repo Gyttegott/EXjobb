@@ -8,11 +8,11 @@
 #
  - pipeline.id: powershell_post
    pipeline.workers: 2
-   path.config: "logstash-6.7.1/config/PsPost.conf"
+   path.config: "config/PsPost.conf"
  - pipeline.id: powershell_pre
    queue.type: persisted
    pipeline.workers: 2
-   path.config: "logstash-6.7.1/config/PsPre.conf"
+   path.config: "config/PsPre.conf"
 #
 # Available options:
 #
