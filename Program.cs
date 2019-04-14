@@ -35,7 +35,7 @@ namespace ES_PS_analyzer
         public string powershell_host_application { get; set; }
 
         //All parameters given to the command
-        public List<string> powershell_parameters { get; set; }
+        public string[] powershell_parameters { get; set; }
 
         //When the command was run in ISO8601 UTC format
         public DateTime timestamp { get; set; }
@@ -56,7 +56,10 @@ namespace ES_PS_analyzer
             powershell_script_name = (string)Json["powershell"]["script_name"];
             powershell_command = (string)Json["powershell"]["command"];
             powershell_host_application = (string)Json["powershell"]["host_application"];
-            powershell_parameters = Json["powershell"]["parameters"].ToObject<List<string>>();
+
+            //handle missing parameters field
+            var tmp = Json["powershell"]["parameters"];
+            powershell_parameters = tmp == null ? new string[] { } : tmp.ToObject<string[]>();
             powershell_risk = 0;
             timestamp = Json["@timestamp"].ToObject<DateTime>();
             computer_name = (string)Json["winlog"]["computer_name"];
@@ -208,15 +211,22 @@ namespace ES_PS_analyzer
                                         //Parse the logs into dynamic objects
                                         var ParsedLog = JObject.Parse(log);
                                         //If the parsed command has not been configured, drop it, it does not impact the risk curve
-                                        if (!ProgramData.RiskLookupTable.CommandExist((string)ParsedLog["powershell"]["command"]))
+                                        try
                                         {
-                                            //Log the dropped command in a local text file for inspection of later inclusion
-                                            using (var writer = new StreamWriter("UnseenCommands.txt", true))
+                                            if (!ProgramData.RiskLookupTable.CommandExist((string)ParsedLog["powershell"]["command"]))
                                             {
-                                                var pars = (JArray)ParsedLog["powershell"]["parameters"];
-                                                writer.WriteLine((string)ParsedLog["powershell"]["command"] + " " + (pars == null ? "" : string.Join(" ", pars)));
+                                                //Log the dropped command in a local text file for inspection of later inclusion
+                                                using (var writer = new StreamWriter("UnseenCommands.txt", true))
+                                                {
+                                                    var pars = (JArray)ParsedLog["powershell"]["parameters"];
+                                                    writer.WriteLine((string)ParsedLog["powershell"]["command"] + " " + (pars == null ? "" : string.Join(" ", pars)));
+                                                }
+                                                continue;
                                             }
-                                            continue;
+                                        }
+                                        catch(Exception e)
+                                        {
+                                            Console.WriteLine(e.Message);
                                         }
 
                                         //Insert the parsed log into the incoming log pool

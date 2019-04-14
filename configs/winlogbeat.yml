@@ -27,9 +27,14 @@ winlogbeat.event_logs:
     processors:
     - drop_event:
         when:
-            not:
-                contains:
-                    event_data.ParentProcessName: "powershell.exe"
+            and:
+                - not:
+                    contains:
+                        winlog.event_data.ParentProcessName: "powershell.exe"
+                - not:
+                    contains:
+                        winlog.event_data.ParentProcessName: "cmd.exe"
+
 
 #==================== Elasticsearch template setting ==========================
 

@@ -28,6 +28,8 @@ def filter(event)
 			event.set('[powershell][command]', name)
 			# Skip commands not of interest
 			next if ['ForEach-Object', 'Out-Default', 'Set-StrictMode', 'New-Object', 'Add-Member'].include? name
+			# Skip .exe calls in module logging
+			next if name.match(/.*\.exe/)
 			# find all parameter names
 			r = commands[i].scan(/(?<=name=\").*?(?=\";)/)
 			# find all parameter values

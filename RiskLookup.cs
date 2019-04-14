@@ -93,7 +93,7 @@ namespace ES_PS_analyzer
             switch (Location)
             {
                 case "parameter":
-                    GetSource = x => x.powershell_parameters == null ? EmptyPara : x.powershell_parameters.ToArray();
+                    GetSource = x => x.powershell_parameters == null ? EmptyPara : x.powershell_parameters;
                     break;
                 default:
                     throw new Exception("Mappings configuration error");
@@ -185,7 +185,14 @@ namespace ES_PS_analyzer
         /// <returns>A bool indicating if the command has been configured</returns>
         public bool CommandExist(string command)
         {
-            return RiskDict.ContainsKey(command);
+            try
+            {
+                return RiskDict.ContainsKey(command);
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
     }
 }
