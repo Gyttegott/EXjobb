@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +8,39 @@ using System.Text.RegularExpressions;
 
 namespace ES_PS_analyzer
 {
+    public class SingleOrArrayConverter<T> : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(List<T>));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.Array)
+            {
+                return token.ToObject<List<T>>();
+            }
+            return new List<T> { token.ToObject<T>() };
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            List<T> list = (List<T>)value;
+            if (list.Count == 1)
+            {
+                value = list[0];
+            }
+            serializer.Serialize(writer, value);
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+    }
+
     /// <summary>
     /// This class represents configuration of a single command regarding risk levels.
     /// It contains a base risk for the command and additional custom definitions of extra risks based on the commands context.
@@ -32,7 +66,8 @@ namespace ES_PS_analyzer
         public string Type { get; set; }
 
         //What value the evaluation should use
-        public string Value { get; set; }
+        [JsonConverter(typeof(SingleOrArrayConverter<string>))]
+        public List<string> Value { get; set; }
 
         //Where to apply the evaluation
         public string Location { get; set; }
@@ -49,7 +84,7 @@ namespace ES_PS_analyzer
         /// Given a source string from GetSource calculates if requirements for additional risk is fulfilled
         /// <returns>A boolean indicating if extra risk should be applied</returns>
         /// </summary>
-        private Func<string, bool> GetEvaluation;
+        private Func<string, string, bool> GetEvaluation;
 
         /// <summary>
         /// Calculates and returns the additonal risk a given command yields according to the defined custom query this object represents
@@ -58,15 +93,23 @@ namespace ES_PS_analyzer
         /// <returns>The amount of additional risk that should be applied to a command</returns>
         public double GetAdditionalRisk(PSInfo Log)
         {
-            double res = 0;
+            int hits = 0;
 
             //loop through each source given and apply the query to each, sum up all hits
-            foreach(string source in GetSource(Log))
+            var sources = GetSource(Log);
+            for (var b = 0; b < Value.Count; b++)
             {
-                if (GetEvaluation(source))
-                    res += RiskAddition;
+                for (var a = 0; a < sources.Length; a++)
+                {
+                    if (GetEvaluation(Value[b], sources[a]))
+                    {
+                        hits++;
+                        break;
+                    }
+                }
             }
-            return res;
+
+            return hits == Value.Count ? RiskAddition : 0;
         }
 
         /// <summary>
@@ -83,7 +126,7 @@ namespace ES_PS_analyzer
             switch (Type)
             {
                 case "regex":
-                    GetEvaluation = x => Regex.IsMatch(x, Value);
+                    GetEvaluation = (needle, haystack) => Regex.IsMatch(haystack, needle, RegexOptions.IgnoreCase);
                     break;
                 default:
                     throw new Exception("Mappings configuration error");

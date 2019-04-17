@@ -73,7 +73,7 @@ namespace ES_PS_analyzer
             //Look up what risk the current command and its context has independently
             double CommandBaseRisk = ProgramData.RiskLookupTable.getRisk(CurrentCommand);
             Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Base risk from previos value of {0} at {1} is {2}", BaseLine, LastCommand == null ? "never" : LastCommand.timestamp.ToString("o"), BaseLine));
-            Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Risk for command '{0}' is {1}.", CurrentCommand.powershell_command, CommandBaseRisk));
+            Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Risk for command '{0}' is {1}", CurrentCommand.powershell_command, CommandBaseRisk));
 
             //Calculate the complete command risk
             return BaseLine + CurrentTimeFactor * CommandBaseRisk;

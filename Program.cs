@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using System.Runtime.Caching;
 using System.Diagnostics;
 using System.Collections;
 using System.Net;
@@ -101,45 +100,6 @@ namespace ES_PS_analyzer
     }
 
     /// <summary>
-    /// Used for handling asynchronos access to memory caches for different purposes
-    /// </summary>
-    class CacheManager
-    {
-        //Cache for storing the last run command for hosts
-        private MemoryCache LastCommandCache = new MemoryCache("PowerShellCommands");
-        //Lock for last run cache, enabling asynchronos access
-        private object LastCommandCacheLock = new object();
-
-        /// <summary>
-        /// Retrieves the last run command for a host
-        /// </summary>
-        /// <param name="HostName">The full computer name of the host</param>
-        /// <returns>The last run command and its context for the host</returns>
-        public PSInfo GetLastCommand(string HostName)
-        {
-            object res;
-            lock (LastCommandCacheLock)
-            {
-                res = LastCommandCache[HostName];
-            }
-            return (PSInfo)res;
-        }
-
-        /// <summary>
-        /// Sets the last run command for a host
-        /// </summary>
-        /// <param name="HostName">The specific host name to store the command for</param>
-        /// <param name="Command">The command to store and its context</param>
-        public void SetLastCommand(string HostName, PSInfo Command)
-        {
-            lock (LastCommandCacheLock)
-            {
-                LastCommandCache[HostName] = Command;
-            }
-        }
-    }
-
-    /// <summary>
     /// Main program
     /// </summary>
     class Program
@@ -227,6 +187,7 @@ namespace ES_PS_analyzer
                                         catch(Exception e)
                                         {
                                             Console.WriteLine(e.Message);
+                                            Console.WriteLine(ParsedLog["powershell"].ToString());
                                         }
 
                                         //Insert the parsed log into the incoming log pool
@@ -281,7 +242,7 @@ namespace ES_PS_analyzer
             var ESClient = new ELasticsearchQuerier(Configuration.getSetting("ConnectionUrl"));
 
             //Create the cache handler
-            var Cache = new CacheManager();
+            var Cache = new CacheManager(30);
 
             //Start the log polling
             while (true)

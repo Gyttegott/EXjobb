@@ -1,4 +1,23 @@
-﻿[
+﻿/*
+  2019-04-17
+
+  Mappings used to determine what risks specific commands have.
+  Current format is the following:
+  [
+    {
+      Command: Case-sensitive command name (required)
+      BaseRisk: floating number of risk (required)
+      RiskQueries: array of criterias for highten risk value (optional)
+        [
+          {
+            Type: lower-case identifier of type of comparison, available types are "regex" (required)
+            Value: 
+          }
+        ]
+    }
+  ]
+*/
+[
   {
     "Command": "Get-LocalGroup",
     "BaseRisk": 2
@@ -30,6 +49,30 @@
         "Value": "-Path.*C:\\\\Users$",
         "Location": "parameter",
         "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "-Include.*web.config",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Program Files",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Registry::.*Software",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Startup",
+        "Location": "parameter",
+        "RiskAddition": 2
       }
     ]
   },
@@ -42,6 +85,30 @@
         "Value": "-AssemblyName.*System.Security",
         "Location": "parameter",
         "RiskAddition": 8
+      }
+    ]
+  },
+  {
+    "Command": "Get-WmiObject",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "Win32_Product",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "Win32_Process",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "Win32_Service",
+        "Location": "parameter",
+        "RiskAddition": 6
       }
     ]
   },
@@ -62,6 +129,88 @@
         "RiskAddition": 5
       }
     ]
+  },
+  {
+    "Command": "Get-Service",
+    "BaseRisk": 4
+  },
+  {
+    "Command": "Get-ScheduledTask",
+    "BaseRisk": 4
+  },
+  {
+    "Command": "Get-PSDrive",
+    "BaseRisk": 4
+  },
+  {
+    "Command": "Select-String",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-Path.*Firefox\\\\Profiles",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Chrome\\\\User Data",
+        "Location": "parameter",
+        "RiskAddition": 10
+      }
+    ]
+  },
+  {
+    "Command": "Invoke-WebRequest",
+    "BaseRisk": 20,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-UseDefaultCredentials",
+        "Location": "parameter",
+        "RiskAddition": 30
+      }
+    ]
+  },
+  {
+    "Command": "New-Object",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-ArgumentList.*Chrome\\\\User Data",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*Windows.Security.Credentials.PasswordVault",
+        "Location": "parameter",
+        "RiskAddition": 50
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*System.Net.Networkinformation.Ping",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*System.Net.Sockets.TcpClient",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-TypeName.*System.DirectoryServices.DirectoryEntry", "^-ArgumentList.*LDAP://" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      }
+    ]
+  },
+  {
+    "Command": "Enter-PSSession",
+    "BaseRisk": 50
   },
   {
     "Command": "systeminfo",
@@ -87,13 +236,37 @@
         "Type": "regex",
         "Value": "query",
         "Location": "parameter",
-        "RiskAddition": 4
+        "RiskAddition": 2
       },
       {
         "Type": "regex",
         "Value": "password",
         "Location": "parameter",
         "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "PowerShellVersion",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "Windows.*Run",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "AlwaysInstallElevated",
+        "Location": "parameter",
+        "RiskAddition": 18
+      },
+      {
+        "Type": "regex",
+        "Value": "Terminal Server Client",
+        "Location": "parameter",
+        "RiskAddition": 8
       }
     ]
   },
@@ -118,6 +291,12 @@
         "Value": "^Administrat(o|ö)r$",
         "Location": "parameter",
         "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "^start$",
+        "Location": "parameter",
+        "RiskAddition": 4
       }
     ]
   },
@@ -135,7 +314,7 @@
   },
   {
     "Command": "findstr",
-    "BaseRisk": 4,
+    "BaseRisk": 2,
     "RiskQueries": [
       {
         "Type": "regex",
@@ -154,6 +333,24 @@
         "Value": "^password$",
         "Location": "parameter",
         "RiskAddition": 6
+      },
+      {
+        "Type": "regex",
+        "Value": "system32",
+        "Location": "parameter",
+        "RiskAddition": 3
+      },
+      {
+        "Type": "regex",
+        "Value": "binary_path_name",
+        "Location": "parameter",
+        "RiskAddition": 4
+      },
+      {
+        "Type": "regex",
+        "Value": "service_name",
+        "Location": "parameter",
+        "RiskAddition": 4
       }
     ]
   },
@@ -178,6 +375,100 @@
         "Value": "config",
         "Location": "parameter",
         "RiskAddition": 3
+      }
+    ]
+  },
+  {
+    "Command": "tasklist",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "eq system",
+        "Location": "parameter",
+        "RiskAddition": 2
+      }
+    ]
+  },
+  {
+    "Command": "sc",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^query$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "^qc$",
+        "Location": "parameter",
+        "RiskAddition": 6
+      }
+    ]
+  },
+  {
+    "Command": "wmic",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^service$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "^startup$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      }
+    ]
+  },
+  {
+    "Command": "schtasks",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/query$",
+        "Location": "parameter",
+        "RiskAddition": 2
+      },
+      {
+        "Type": "regex",
+        "Value": "^/create$",
+        "Location": "parameter",
+        "RiskAddition": 50
+      }
+    ]
+  },
+  {
+    "Command": "icacls",
+    "BaseRisk": 10
+  },
+  {
+    "Command": "nslookup",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
+        "Location": "parameter",
+        "RiskAddition": 1
+      }
+    ]
+  },
+  {
+    "Command": "ping",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
+        "Location": "parameter",
+        "RiskAddition": 1
       }
     ]
   }
