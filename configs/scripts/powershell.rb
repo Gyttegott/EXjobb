@@ -11,16 +11,17 @@
 				
 def filter(event)
 	retval = Array.new
-	param3 = event.get('[winlog][event_data][param3]')
-	param2 = event.get('[winlog][event_data][param2]')
-	scriptname = param2[/(?<=(\n|\t)ScriptName=).*?(?=\n)/]
-	hostapp = param2[/(?<=(\n|\t)HostApplication=).*?(?=\n)/]
+	payload = event.get('[winlog][event_data][Payload]')
+	context = event.get('[winlog][event_data][ContextInfo]')
+	scriptname = context[/(?<= Script Name = ).*?(?=\n)/]
+	hostapp = context[/(?<= Host Application = ).*?(?=\n)/]
+	version = context[/(?<= Engine Version = ).*?(?=\n)/]
 	event.set('[powershell][script_name]', scriptname)
 	event.set('[powershell][host_application]', hostapp)
 	event.set('[powershell][main_command]', event.get('[winlog][event_data][param1]'))
 	event.remove('[winlog][event_data]')
 	
-	commands = param3.split('CommandInvocation(')
+	commands = payload.split('CommandInvocation(')
 	if commands.length > 1
 		for i in 1..commands.length-1
 			# Find the current command being executed
