@@ -218,6 +218,11 @@ namespace ES_PS_analyzer
                 risk += extra.GetAdditionalRisk(Command);
             }
 
+            //Check for malicious context
+            double EncodedCommand = Regex.IsMatch(Command.powershell_host_application, "-EncodedCommand") ? 2 : 0;
+            double NoProfile = Regex.IsMatch(Command.powershell_host_application, "-NoProfile") ? 1.2 : 0;
+            double HiddenWindow = Regex.IsMatch(Command.powershell_host_application, "-WindowStyle Hidden") ? 1.5 : 0;
+
             return risk;
         }
 

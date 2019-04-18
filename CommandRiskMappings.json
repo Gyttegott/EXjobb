@@ -173,6 +173,14 @@
     ]
   },
   {
+    "Command": "Invoke-Expression",
+    "BaseRisk": 20
+  },
+  {
+    "Command": "Export-Clixml",
+    "BaseRisk": 30
+  },
+  {
     "Command": "New-Object",
     "BaseRisk": 0,
     "RiskQueries": [
@@ -211,6 +219,54 @@
   {
     "Command": "Enter-PSSession",
     "BaseRisk": 50
+  },
+  {
+    "Command": "Invoke-WmiMethod",
+    "BaseRisk": 20,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*CreateKey", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*CheckAccess", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*GetStringValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*SetStringValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*DeleteValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*Create", "^-Class.*Win32_Process" ],
+        "Location": "parameter",
+        "RiskAddition": 30
+      },
+      {
+        "Type": "regex",
+        "Value": "^-ComputerName ((?!localhost).)*$",
+        "Location": "parameter",
+        "RiskAddition": 30
+      }
+    ]
   },
   {
     "Command": "systeminfo",
