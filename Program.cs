@@ -87,7 +87,11 @@ namespace ES_PS_analyzer
         public static List<IncomingLog> IncomingPool = new List<IncomingLog>();
         //Lock object for asynchronos access to the incoming log pool
         public static object IncomingPoolLock = new object();
-        //public static EventWaitHandle IncomingHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+        //The pool of all logs parsed
+        public static List<IncomingLog> ParsedPool = new List<IncomingLog>();
+        //Lock object for asynchronos access to the parsed log pool
+        public static object ParsedPoolLock = new object();
 
         //The pool of all outgoing logs that has yet to be sent
         public static List<string> OutgoingPool = new List<string>();
@@ -369,6 +373,66 @@ namespace ES_PS_analyzer
 
         }
 
+        static void LogParser()
+        {
+            List<IncomingLog> WorkingPool;
+            Dictionary<string, List<IncomingLog>> SequenceQueue = new Dictionary<string, List<IncomingLog>>();
+
+            while (true)
+            {
+                
+            }
+        }
+
+    }
+
+    class LogParser
+    {
+        private List<IncomingLog> ParsingSource;
+        private object SourceLockObject;
+        private List<IncomingLog> ParsingTarget;
+        private object TargetLockObject;
+
+        private List<IncomingLog> WorkingPool;
+        private Dictionary<string, List<IncomingLog>> SequenceQueue;
+
+        public LogParser(List<IncomingLog> Source, object SourceLock, List<IncomingLog> Target, object TargetLock)
+        {
+            ParsingSource = Source;
+            SourceLockObject = SourceLock;
+            ParsingTarget = Target;
+            TargetLockObject = TargetLock;
+
+            WorkingPool = null;
+            SequenceQueue = new Dictionary<string, List<IncomingLog>>();
+        }
+
+        public void ParseBatch()
+        {
+            lock (SourceLockObject)
+            {
+                if (ParsingSource.Count > 0)
+                {
+                    WorkingPool = ParsingSource;
+                    ParsingSource = new List<IncomingLog>();
+                }
+                else
+                {
+                    WorkingPool = null;
+                }
+            }
+
+            if (WorkingPool != null)
+            {
+                for (var i = 0; i < WorkingPool.Count; i++)
+                {
+                    var log = WorkingPool[i].log;
+
+                    string param2 = (string)log["winlog"]["event_data"]["param2"];
+                    var seq = Regex.Match(param2, "");
+                    }
+            }
+        }
     }
 
 }
