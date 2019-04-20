@@ -218,6 +218,16 @@ namespace ES_PS_analyzer
                 risk += extra.GetAdditionalRisk(Command);
             }
 
+            if (Conf.BaseRisk == risk && Conf.RiskQueries.Count > 0)
+            {
+                //Log the dropped command in a local text file for inspection of later inclusion
+                using (var writer = new StreamWriter("ZeroCommands.txt", true))
+                {
+
+                    writer.WriteLine("{0} {1}", Command.powershell_command, string.Join(" ", Command.powershell_parameters));
+                }
+            }
+
             //Check for malicious context
             double EncodedCommand = Regex.IsMatch(Command.powershell_host_application, "-EncodedCommand") ? 2 : 0;
             double NoProfile = Regex.IsMatch(Command.powershell_host_application, "-NoProfile") ? 1.2 : 0;

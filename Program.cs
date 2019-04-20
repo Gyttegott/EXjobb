@@ -22,7 +22,7 @@ namespace ES_PS_analyzer
     class PSInfo
     {
         //The full command line issued
-        public string powershell_main_command { get; set; }
+        //public string powershell_main_command { get; set; }
 
         //The path and script name of the script the current command is executed from
         public string powershell_script_name { get; set; }
@@ -51,7 +51,7 @@ namespace ES_PS_analyzer
         /// <param name="Json">JSON object</param>
         public PSInfo (JObject Json)
         {
-            powershell_main_command = (string)Json["powershell"]["main_command"];
+            //powershell_main_command = (string)Json["powershell"]["main_command"];
             powershell_script_name = (string)Json["powershell"]["script_name"];
             powershell_command = (string)Json["powershell"]["command"];
             powershell_host_application = (string)Json["powershell"]["host_application"];
@@ -169,7 +169,16 @@ namespace ES_PS_analyzer
                                     foreach (string log in split)
                                     {
                                         //Parse the logs into dynamic objects
-                                        var ParsedLog = JObject.Parse(log);
+                                        JObject ParsedLog;
+                                        try
+                                        {
+                                            ParsedLog = JObject.Parse(log);
+                                        }
+                                        catch (Newtonsoft.Json.JsonReaderException)
+                                        {
+                                            Debug.WriteLine("Log entry failed parsing");
+                                            continue;
+                                        }
                                         //If the parsed command has not been configured, drop it, it does not impact the risk curve
                                         try
                                         {
@@ -242,7 +251,7 @@ namespace ES_PS_analyzer
             var ESClient = new ELasticsearchQuerier(Configuration.getSetting("ConnectionUrl"));
 
             //Create the cache handler
-            var Cache = new CacheManager(30);
+            var Cache = new CacheManager();
 
             //Start the log polling
             while (true)
@@ -283,7 +292,7 @@ namespace ES_PS_analyzer
         /// <param name="Calculator">The calculator to use when determening command risks</param>
         /// <param name="Cache">The cache manager to use for caching values</param>
         /// <param name="ESClient">The ElasticSearch client to use when querying</param>
-        static async void ProcessLog(IEnumerable<IncomingLog> logs, RiskCalculator Calculator, CacheManager Cache, ELasticsearchQuerier ESClient)
+        static void ProcessLog(IEnumerable<IncomingLog> logs, RiskCalculator Calculator, CacheManager Cache, ELasticsearchQuerier ESClient)
         {
 
             string Host = (string)logs.First().log["winlog"]["computer_name"];

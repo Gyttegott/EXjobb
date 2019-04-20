@@ -12,14 +12,14 @@
 def filter(event)
 	retval = Array.new
 	payload = event.get('[winlog][event_data][Payload]')
-	context = event.get('[winlog][event_data][ContextInfo]')
-	scriptname = context[/(?<= Script Name = ).*?(?=\n)/]
-	hostapp = context[/(?<= Host Application = ).*?(?=\n)/]
-	version = context[/(?<= Engine Version = ).*?(?=\n)/]
-	event.set('[powershell][script_name]', scriptname)
-	event.set('[powershell][host_application]', hostapp)
-	event.set('[powershell][main_command]', event.get('[winlog][event_data][param1]'))
-	event.remove('[winlog][event_data]')
+	#context = event.get('[winlog][event_data][ContextInfo]')
+	#scriptname = context[/(?<= Script Name = ).*?(?=\n)/]
+	#hostapp = context[/(?<= Host Application = ).*?(?=\n)/]
+	#version = context[/(?<= Engine Version = ).*?(?=\n)/]
+	#event.set('[powershell][script_name]', scriptname)
+	#event.set('[powershell][host_application]', hostapp)
+	#event.set('[powershell][main_command]', event.get('[winlog][event_data][param1]'))
+	#event.remove('[winlog][event_data]')
 	
 	commands = payload.split('CommandInvocation(')
 	if commands.length > 1
