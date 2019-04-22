@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace ES_PS_analyzer
 {
@@ -332,52 +333,82 @@ namespace ES_PS_analyzer
             Cache.SetLastCommand(LastCommand.computer_name, LastCommand);
         }
 
-        /// <summary>
-        /// Async function used for polling the outgoing log pool and send found logs by TCP
-        /// </summary>
-        /// <param name="Server">The server to send logs to</param>
-        /// <param name="Port">The port to connect to</param>
-        static void LogSender(string Server, int Port)
+    }
+
+    class LogProcessor
+    {
+        private BlockingCollection<JObject> IncomingQueue;
+        private BlockingCollection<JObject> OutgoingQueue;
+
+        private List<IncomingLog> RetentionQueue;
+        private readonly object RetentionLock = new object();
+
+        private CacheManager Cache;
+        private RiskCalculator Calculator;
+        private ELasticsearchQuerier ESClient;
+
+        public LogProcessor(BlockingCollection<JObject> InputStore, BlockingCollection<JObject> OutputStore, CacheManager CacheHandler, RiskCalculator RiskEvaluater, ELasticsearchQuerier ElasticClient)
         {
-            TcpClient Client = new TcpClient();
+            IncomingQueue = InputStore;
+            OutgoingQueue = OutputStore;
+            Cache = CacheHandler;
+            Calculator = RiskEvaluater;
+            ESClient = ElasticClient;
 
-            //Start sending loop
-            while (true)
-            {
-                List<string> SendString = null;
-
-                //Lock the outgoing log pool and extract all its content
-                lock (ProgramData.OutgoingPoolLock)
-                {
-                    if(ProgramData.OutgoingPool.Count() > 0)
-                    {
-                        SendString = new List<string>(ProgramData.OutgoingPool);
-                        ProgramData.OutgoingPool.Clear();
-                    }
-                }
-
-                //If any logs was extracted, send them
-                if(SendString != null)
-                {
-                    //Reconnect to the server if the connection is down
-                    if (!Client.Connected)
-                        Client.Connect(Server, Port);
-
-                    //Send all extracted logs
-                    StreamWriter Writer = new StreamWriter(Client.GetStream(), Encoding.ASCII);
-                    foreach(var str in SendString)
-                    {
-                        byte[] sarr = Encoding.ASCII.GetBytes(str+'\n');
-                        Client.GetStream().Write(sarr, 0, sarr.Length);
-                    }
-                }
-
-                //Sleep for a while
-                System.Threading.Thread.Sleep(10000);
-            }
-
+            RetentionQueue = new List<IncomingLog>();
         }
 
+        public void StartProccessing()
+        { 
+            string TmpLog;
+            bool TimedOut;
+
+            int BatchSize = 30;
+            int MsTimeout = 1000;
+
+            while (true)
+            {
+                TimedOut = false;
+
+                ProccessPool.Add(IncomingQueue.Take());
+                while(ProccessPool.Count < BatchSize && !TimedOut)
+                {
+                    if(IncomingQueue.TryTake(out TmpLog))
+                    {
+                        ProccessPool.Add(TmpLog);
+                    }
+                }
+            }
+        }
+
+        private void GroupProcess(IEnumerable<IncomingLog> logs, RiskCalculator Calculator, CacheManager Cache, ELasticsearchQuerier ESClient)
+        {
+            //Lock the incoming log pool and extract all logs of an configured age. This is done since incoming logs may come unordered chronologically
+            List<IncomingLog> Results;
+            lock (RetentionLock)
+            {
+                Results = RetentionQueue.FindAll(x => (DateTime.Now - x.obtained).TotalSeconds > 6);
+                foreach (var res in Results)
+                {
+                    ProgramData.IncomingPool.Remove(res);
+                }
+            }
+            //If logs of enough high age is found, group them by the host they were run on and start individual async processes for each group
+            if (Results.Count() > 0)
+            {
+                var groups = Results.GroupBy(x => (string)x.log["winlog"]["computer_name"]);
+                foreach (var g in groups)
+                {
+                    Task.Run(() => ProcessLog(g, RiskCalculator, Cache, ESClient));
+                }
+            }
+            else
+            {
+                Debug.WriteLine("[DEBUG] No new logs to process, trying again in 10 sec");
+            }
+            //Sleep for a configured time to wait for more logs of certain age
+            System.Threading.Thread.Sleep(10000);
+        }
     }
 
 }

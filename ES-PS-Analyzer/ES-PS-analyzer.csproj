@@ -74,11 +74,13 @@
   <ItemGroup>
     <Compile Include="CacheManager1.cs" />
     <Compile Include="ELasticsearchQuerier.cs" />
+    <Compile Include="INetworkHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RiskCalculator.cs" />
     <Compile Include="RiskLookup.cs" />
+    <Compile Include="JSONNetworkSender.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
