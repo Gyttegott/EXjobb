@@ -1,19 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace ES_PS_analyzer
+namespace ES_PS_analyzer.Tools
 {
-    class CacheManager
+    class CacheManager : ICommandCache
     {
         private Dictionary<string, PSInfo> CommandCache = new Dictionary<string, PSInfo>();
         private object CommandCacheLock = new object();
-        public PSInfo GetLastCommand(string host)
+
+        public async Task<PSInfo> GetLastCommand(string Host)
         {
             PSInfo res;
             lock (CommandCacheLock)
             {
                 try
                 {
-                    res = CommandCache[host];
+                    res = CommandCache[Host];
                 }
                 catch
                 {
@@ -24,11 +26,11 @@ namespace ES_PS_analyzer
             return res;
         }
 
-        public void SetLastCommand(string host, PSInfo command)
+        public void SetLastCommand(string Host, PSInfo LastCommand)
         {
             lock (CommandCacheLock)
             {
-                CommandCache[host] = command;
+                CommandCache[Host] = LastCommand;
             }
         }
     }

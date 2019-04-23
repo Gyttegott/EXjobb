@@ -22,7 +22,7 @@ namespace ES_PS_analyzer
     /// <summary>
     /// Client used for querying the ElasticSearch server(s)
     /// </summary>
-    class ELasticsearchQuerier
+    class ELasticsearchQuerier : Tools.ICommandCache
     {
         //Third party client used for querying
         private ElasticLowLevelClient Client;
@@ -80,7 +80,7 @@ namespace ES_PS_analyzer
         /// </summary>
         /// <param name="HostName">The full name of the host to search for</param>
         /// <returns>The found command, null otherwise</returns>
-        public async Task<PSDoc> GetLastCommand(string HostName)
+        public async Task<PSInfo> GetLastCommand(string HostName)
         {
             //Make an async call to block the current thread until a result is given
             var res = await Client.SearchAsync<StringResponse>("logstash-*", string.Format(@"
@@ -117,7 +117,12 @@ namespace ES_PS_analyzer
             //Parse the result and return it
             var searchobj = Newtonsoft.Json.Linq.JObject.Parse(res.Body);
             var Commands = JsonConvert.DeserializeObject<List<PSDoc>>(searchobj["hits"]["hits"].ToString());
-            return (Commands.Count > 0 ? Commands[0] : null);
+            return (Commands.Count > 0 ? Commands[0].Source : null);
+        }
+
+        public void SetLastCommand(string Host, PSInfo LastCommand)
+        {
+            return;
         }
 
         /*public void MigrateAndUpdateLog(string NewIndex, string LogId, string RiskLevel)

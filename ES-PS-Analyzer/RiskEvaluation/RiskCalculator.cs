@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace ES_PS_analyzer
+namespace ES_PS_analyzer.RiskEvaluation
 {
     /// <summary>
     /// Main risk calculator used for calculating risks for commands. Unlike RiskLookup class it takes things like previous commands and other factors into consideration.
     /// </summary>
-    class RiskCalculator
+    class RiskCalculator : IRiskCalculator
     {
         //Time variables used for calculating extra factors for time of command execution
         private MathNet.Numerics.Interpolation.CubicSpline TimeInterpolator;
@@ -56,7 +56,7 @@ namespace ES_PS_analyzer
         /// <param name="CurrentCommand">The command to calculate the risk for</param>
         /// <param name="LastCommand">The command run before the current one</param>
         /// <returns>A number representing the final risk of the executed command</returns>
-        public double GetRisk(PSInfo CurrentCommand, PSInfo LastCommand = null)
+        public double CalculateRisk(PSInfo CurrentCommand, PSInfo LastCommand = null)
         {
             //set the inital risk to 0
             double BaseLine = 0;

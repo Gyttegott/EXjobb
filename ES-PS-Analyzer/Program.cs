@@ -5,14 +5,10 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Collections;
 using System.Net;
-using System.Net.Sockets;
-using System.Text.RegularExpressions;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using System.Collections.Concurrent;
 
 namespace ES_PS_analyzer
 {
@@ -20,7 +16,7 @@ namespace ES_PS_analyzer
     /// <summary>
     ///  Used for holding commands and their associated contexts
     /// </summary>
-    class PSInfo
+    public class PSInfo
     {
         //The full command line issued
         //public string powershell_main_command { get; set; }
@@ -68,18 +64,6 @@ namespace ES_PS_analyzer
     }
 
     /// <summary>
-    /// Used for grouping incoming logs with the datetime that they were received
-    /// </summary>
-    class IncomingLog
-    {
-        //The log in JSON format
-        public JObject log { get; set; }
-
-        //The time it was received in this program
-        public DateTime obtained { get; set; }
-    }
-
-    /// <summary>
     /// Global data that is to be accesible for multiple parts of the program
     /// </summary>
     class ProgramData
@@ -117,119 +101,10 @@ namespace ES_PS_analyzer
             Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
 
             //Start async functions for processing logs and sending processed logs
-            Task.Run(() => LogProcessingStarter());
-            Task.Run(() => LogSender("localhost", 9555));
+            //Task.Run(() => LogProcessingStarter());
+            //Task.Run(() => LogSender("localhost", 9555));
 
-            TcpListener Server = null;
-            try
-            {
-                // Start listening for incoming TCP calls on configured port
-                Server = new TcpListener(IPAddress.Any, 9432);
-                Server.Start();
-
-                // Buffer for reading data
-                Byte[] bytes = new Byte[256];
-
-                // Enter the listening loop.
-                while (true)
-                {
-                    Console.Write("Waiting for a connection... ");
-
-                    // Perform a blocking call to accept requests.
-                    TcpClient client = Server.AcceptTcpClient();
-                    Console.WriteLine("Connected!");
-
-                    // Get a stream object for reading incoming logs
-                    NetworkStream stream = client.GetStream();
-
-                    //Number of bytes read
-                    int i;
-
-                    //Use a memory stream to hold read bytes from the network stream
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        // Loop to receive all the data sent by the client into the buffer for reading data.
-                        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
-                        {
-                            //Write all read bytes to the memory stream
-                            ms.Write(bytes, 0, i);
-
-                            // Process the data if all data has been read
-                            if (!stream.DataAvailable)
-                            {
-                                //Convert the read bytes to a string
-                                var data = Encoding.ASCII.GetString(ms.ToArray(), 0, (int)ms.Length);
-                                //Clear the memory stream
-                                ms.SetLength(0);
-                                //Split the converted string into separate strings, each holding a single JSON log object
-                                var split = Regex.Split(data, "(?<=\\})\\n(?=\\{)");
-
-                                //Lock the incoming log pool while inserting the new logs
-                                lock (ProgramData.IncomingPoolLock)
-                                {
-                                    foreach (string log in split)
-                                    {
-                                        //Parse the logs into dynamic objects
-                                        JObject ParsedLog;
-                                        try
-                                        {
-                                            ParsedLog = JObject.Parse(log);
-                                        }
-                                        catch (Newtonsoft.Json.JsonReaderException)
-                                        {
-                                            Debug.WriteLine("Log entry failed parsing");
-                                            continue;
-                                        }
-                                        //If the parsed command has not been configured, drop it, it does not impact the risk curve
-                                        try
-                                        {
-                                            if (!ProgramData.RiskLookupTable.CommandExist((string)ParsedLog["powershell"]["command"]))
-                                            {
-                                                //Log the dropped command in a local text file for inspection of later inclusion
-                                                using (var writer = new StreamWriter("UnseenCommands.txt", true))
-                                                {
-                                                    var pars = (JArray)ParsedLog["powershell"]["parameters"];
-                                                    writer.WriteLine((string)ParsedLog["powershell"]["command"] + " " + (pars == null ? "" : string.Join(" ", pars)));
-                                                }
-                                                continue;
-                                            }
-                                        }
-                                        catch(Exception e)
-                                        {
-                                            Console.WriteLine(e.Message);
-                                            Console.WriteLine(ParsedLog["powershell"].ToString());
-                                        }
-
-                                        //Insert the parsed log into the incoming log pool
-                                        ProgramData.IncomingPool.Add(new IncomingLog{
-                                            log = ParsedLog,
-                                            obtained = DateTime.Now
-                                        });
-                                    }
-                                }
-                            }
-
-                            /*byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
-
-                            // Send back a response.
-                            stream.Write(msg, 0, msg.Length);
-                            Console.WriteLine("Sent: {0}", data);*/
-                        }
-                    }
-
-                    // Shutdown and end connection
-                    client.Close();
-                }
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketException: {0}", e);
-            }
-            finally
-            {
-                // Stop listening for new clients.
-                Server.Stop();
-            }
+            
             return;
 
 
@@ -333,82 +208,6 @@ namespace ES_PS_analyzer
             Cache.SetLastCommand(LastCommand.computer_name, LastCommand);
         }
 
-    }
-
-    class LogProcessor
-    {
-        private BlockingCollection<JObject> IncomingQueue;
-        private BlockingCollection<JObject> OutgoingQueue;
-
-        private List<IncomingLog> RetentionQueue;
-        private readonly object RetentionLock = new object();
-
-        private CacheManager Cache;
-        private RiskCalculator Calculator;
-        private ELasticsearchQuerier ESClient;
-
-        public LogProcessor(BlockingCollection<JObject> InputStore, BlockingCollection<JObject> OutputStore, CacheManager CacheHandler, RiskCalculator RiskEvaluater, ELasticsearchQuerier ElasticClient)
-        {
-            IncomingQueue = InputStore;
-            OutgoingQueue = OutputStore;
-            Cache = CacheHandler;
-            Calculator = RiskEvaluater;
-            ESClient = ElasticClient;
-
-            RetentionQueue = new List<IncomingLog>();
-        }
-
-        public void StartProccessing()
-        { 
-            string TmpLog;
-            bool TimedOut;
-
-            int BatchSize = 30;
-            int MsTimeout = 1000;
-
-            while (true)
-            {
-                TimedOut = false;
-
-                ProccessPool.Add(IncomingQueue.Take());
-                while(ProccessPool.Count < BatchSize && !TimedOut)
-                {
-                    if(IncomingQueue.TryTake(out TmpLog))
-                    {
-                        ProccessPool.Add(TmpLog);
-                    }
-                }
-            }
-        }
-
-        private void GroupProcess(IEnumerable<IncomingLog> logs, RiskCalculator Calculator, CacheManager Cache, ELasticsearchQuerier ESClient)
-        {
-            //Lock the incoming log pool and extract all logs of an configured age. This is done since incoming logs may come unordered chronologically
-            List<IncomingLog> Results;
-            lock (RetentionLock)
-            {
-                Results = RetentionQueue.FindAll(x => (DateTime.Now - x.obtained).TotalSeconds > 6);
-                foreach (var res in Results)
-                {
-                    ProgramData.IncomingPool.Remove(res);
-                }
-            }
-            //If logs of enough high age is found, group them by the host they were run on and start individual async processes for each group
-            if (Results.Count() > 0)
-            {
-                var groups = Results.GroupBy(x => (string)x.log["winlog"]["computer_name"]);
-                foreach (var g in groups)
-                {
-                    Task.Run(() => ProcessLog(g, RiskCalculator, Cache, ESClient));
-                }
-            }
-            else
-            {
-                Debug.WriteLine("[DEBUG] No new logs to process, trying again in 10 sec");
-            }
-            //Sleep for a configured time to wait for more logs of certain age
-            System.Threading.Thread.Sleep(10000);
-        }
     }
 
 }

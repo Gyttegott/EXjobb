@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace ES_PS_analyzer
+namespace ES_PS_analyzer.RiskEvaluation
 {
     public class SingleOrArrayConverter<T> : JsonConverter
     {
@@ -148,7 +148,7 @@ namespace ES_PS_analyzer
     /// Used for calculating risks for commands and their contexts.
     /// The configuration for evaluating risks is read from the file "CommandRiskMappings.json"
     /// </summary>
-    class RiskLookup
+    class RiskLookup : ICommandRiskCollection
     {
         //Dictionary used for finding configurations for specific commands
         private Dictionary<string, Mapping> RiskDict;
@@ -198,7 +198,7 @@ namespace ES_PS_analyzer
         /// </summary>
         /// <param name="Command">The command and its context</param>
         /// <returns>A number representing the risk the given command and context pose</returns>
-        public double getRisk(PSInfo Command)
+        public double GetBaseRisk(PSInfo Command)
         {
             //Return 0 (no risk) if the command is not configured
             Mapping Conf;
@@ -241,7 +241,7 @@ namespace ES_PS_analyzer
         /// </summary>
         /// <param name="command">The command</param>
         /// <returns>A bool indicating if the command has been configured</returns>
-        public bool CommandExist(string command)
+        public bool CommandExists(string command)
         {
             try
             {
