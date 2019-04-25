@@ -166,13 +166,13 @@ namespace ES_PS_analyzer.RiskEvaluation
         /// Default constructor
         /// <exception cref="System.Exception">Thrown when extra criterias in CommandRiskMappings.json are misconfigured</exception>
         /// </summary>
-        public RiskLookup(Tools.IEntryContentWriter MappingsReader)
+        public RiskLookup(string JSONConfig)
         {
             try
             {
                 RiskDict = new Dictionary<string, Mapping>();
                 //Deserialize configurations in file from json
-                RiskMappings = JsonConvert.DeserializeObject<List<Mapping>>(MappingsReader.ReadContentAsString("CommandRiskMappings.json"));
+                RiskMappings = JsonConvert.DeserializeObject<List<Mapping>>(JSONConfig);
                 foreach(var mapping in RiskMappings)
                 {
                     //Hash all commands for quick configuration access later

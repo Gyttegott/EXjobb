@@ -83,8 +83,8 @@ namespace ES_PS_analyzer
 
             //Create Processor
             var MemoryCache = new Tools.CacheManager();
-            var JSONReader = new Tools.UTF8JSONReader();
-            var RiskLookup = new RiskEvaluation.RiskLookup(JSONReader);
+            var JSONRiskConfig = File.ReadAllText("CommandRiskMappings.json");
+            var RiskLookup = new RiskEvaluation.RiskLookup(JSONRiskConfig);
             var RiskEvaluator = new RiskEvaluation.RiskCalculator(RiskLookup, 7.5, 16.5);
             Func<JObject, PSInfo> LogParser = x => {
                 var tmp = x["powershell"]["parameters"];
