@@ -79,7 +79,10 @@
   <ItemGroup>
     <Compile Include="JSONNetworkReader.cs" />
     <Compile Include="JSONNetworkSender.cs" />
+    <Compile Include="LogAggregator.cs" />
+    <Compile Include="LogProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RetentionCollection.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -72,20 +72,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheManager1.cs" />
+    <Compile Include="LogAggregator.cs" />
+    <Compile Include="Network\TcpClientHandler.cs" />
+    <Compile Include="Tools\UTF8JSONReader.cs" />
+    <Compile Include="Tools\UTF8TextFileEntryContentWriter.cs" />
+    <Compile Include="Tools\UTF8TextFileErrorLogger.cs" />
+    <Compile Include="Tools\IRetentionCollection.cs" />
+    <Compile Include="Tools\RetentionCollection.cs" />
+    <Compile Include="RiskEvaluation\IRiskCalculator.cs" />
+    <Compile Include="RiskEvaluation\ICommandRiskCollection.cs" />
+    <Compile Include="Tools\CacheManager.cs" />
     <Compile Include="ELasticsearchQuerier.cs" />
     <Compile Include="Network\JSONNetworkReader.cs" />
     <Compile Include="Network\TcpServerHandler.cs" />
+    <Compile Include="Tools\DateTimeProvider.cs" />
     <Compile Include="Tools\IErrorLogHandler.cs" />
     <Compile Include="LogProcessor.cs" />
     <Compile Include="Network\INetworkHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RiskCalculator.cs" />
-    <Compile Include="RiskLookup.cs" />
+    <Compile Include="RiskEvaluation\RiskCalculator.cs" />
+    <Compile Include="RiskEvaluation\RiskLookup.cs" />
     <Compile Include="Network\JSONNetworkSender.cs" />
-    <Compile Include="Tools\IFileWriter.cs" />
+    <Compile Include="Tools\ICommandCache.cs" />
+    <Compile Include="Tools\IEntryContentWriter.cs" />
+    <Compile Include="Tools\ITimeProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -112,5 +124,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

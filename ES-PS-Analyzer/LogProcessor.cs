@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
+using System.Text;
+using System.Collections.Generic;
 
 namespace ES_PS_analyzer
 {
@@ -20,94 +21,69 @@ namespace ES_PS_analyzer
         public DateTime obtained { get; set; }
     }
 
-    class LogProcessor
+    public class LogProcessor
     {
         private BlockingCollection<JObject> IncomingQueue;
         private BlockingCollection<JObject> OutgoingQueue;
 
-        private List<IncomingLog> RetentionQueue;
-        private readonly object RetentionLock = new object();
-
         private Tools.ICommandCache FirstLevelCache;
         private Tools.ICommandCache SecondLevelCache;
         private RiskEvaluation.IRiskCalculator Calculator;
-        private Tools.ITimeProvider TimeService;
+        private Tools.IEntryContentWriter EntryWriter;
+        private Tools.IErrorLogHandler ErrorLogger;
 
-        public LogProcessor(BlockingCollection<JObject> InputStore, BlockingCollection<JObject> OutputStore, Tools.ICommandCache FirstLevelCache, RiskEvaluation.IRiskCalculator RiskEvaluater, Tools.ITimeProvider TimeProvider, Tools.ICommandCache SecondLevelCache = null)
+        private Func<JObject, PSInfo> InfoParser;
+        private Action<JObject, double> RiskAdder;
+
+        public LogProcessor(BlockingCollection<JObject> InputStore, BlockingCollection<JObject> OutputStore, Tools.ICommandCache FirstLevelCache, RiskEvaluation.IRiskCalculator RiskEvaluater, Tools.IEntryContentWriter writer, Tools.IErrorLogHandler error, Func<JObject, PSInfo> InfoParser, Action<JObject, double> RiskAdder, Tools.ICommandCache SecondLevelCache = null)
         {
             IncomingQueue = InputStore;
             OutgoingQueue = OutputStore;
             this.FirstLevelCache = FirstLevelCache;
             Calculator = RiskEvaluater;
             this.SecondLevelCache = SecondLevelCache;
-            TimeService = TimeProvider;
 
-            RetentionQueue = new List<IncomingLog>();
+            EntryWriter = writer;
+            ErrorLogger = error;
+
+            this.InfoParser = InfoParser;
+            this.RiskAdder = RiskAdder;
         }
 
-        public void TimeStampIncomingLog()
+        public void ProcessLog()
         {
-            RetentionQueue.Add(new IncomingLog {
-                log = IncomingQueue.Take(),
-                obtained = TimeService.Now()
-            });
-        }
+            var log = IncomingQueue.Take();
 
-        public List<IncomingLog> GetRetentionQueue()
-        {
-            return RetentionQueue;
-        }
+            PSInfo LogInfo = InfoParser(log);
 
-        public IEnumerable<IGrouping<string, IncomingLog>> GetGroupedAndExpiredLogs(int MinAgeSeconds)
-        {
-            List<IncomingLog> Results;
-            lock (RetentionLock)
+            if (string.IsNullOrWhiteSpace(LogInfo.computer_name))
             {
-                Results = RetentionQueue.FindAll(x => (TimeService.Now() - x.obtained).TotalSeconds > MinAgeSeconds);
-                foreach (var res in Results)
-                {
-                    RetentionQueue.Remove(res);
-                }
+                Debug.WriteLine("Log entry has missing host name");
+                string id = Guid.NewGuid().ToString();
+                EntryWriter.WriteContent(id, Encoding.ASCII.GetBytes(log.ToString()));
+                ErrorLogger.LogError(string.Format("Log entry had missing host name. {0}", EntryWriter.GetStorageDescription(id)));
+                return;
             }
 
-            return Results.GroupBy(x => (string)x.log["winlog"]["computer_name"]);
-        }
-
-        public void ProcessLog(IEnumerable<IncomingLog> logs)
-        {
-
-            string Host = (string)logs.First().log["winlog"]["computer_name"];
             //Get the last run command if cached by previous processing
-            PSInfo LastCommand = FirstLevelCache.GetLastCommand(Host).GetAwaiter().GetResult();
-
-            //Sort all the logs by execution timestamp ascending
-            var SortedLogs = logs.Select(x => x.log).OrderBy(x => DateTime.Parse((string)x["@timestamp"]));
+            PSInfo LastCommand = FirstLevelCache.GetLastCommand(LogInfo.computer_name).GetAwaiter().GetResult();
 
             //If the last run command was not in cache, query ElasticSearch for it
             if(LastCommand == null && SecondLevelCache != null)
             {
-                LastCommand = SecondLevelCache.GetLastCommand(Host).GetAwaiter().GetResult();
+                LastCommand = SecondLevelCache.GetLastCommand(LogInfo.computer_name).GetAwaiter().GetResult();
             }
 
-            //Process all the logs in chronological order
-            foreach(JObject log in SortedLogs)
-            {
+            //Calculate the risk level for the command
+            var RiskLevel = Calculator.CalculateRisk(LogInfo, LastCommand);
+            RiskAdder(log, RiskLevel);
+            LogInfo.powershell_risk = RiskLevel;
 
-                var CurrentCommand = new PSInfo(log);
-
-                //Calculate the risk level for the command
-                var RiskLevel = Calculator.CalculateRisk(CurrentCommand, LastCommand);
-                log["powershell"]["risk"] = RiskLevel;
-                CurrentCommand.powershell_risk = RiskLevel;
-
-                //Send the processed log to output queue
-                OutgoingQueue.Add(log);
-
-                LastCommand = CurrentCommand;
-            }
+            //Send the processed log to output queue
+            OutgoingQueue.Add(log);
 
             //Insert the last processed command for future processing for this host
-            FirstLevelCache.SetLastCommand(LastCommand.computer_name, LastCommand);
+            FirstLevelCache.SetLastCommand(LogInfo.computer_name, LogInfo);
         }
     }
 

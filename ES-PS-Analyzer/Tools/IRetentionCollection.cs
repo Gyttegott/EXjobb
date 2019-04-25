@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace ES_PS_analyzer.Tools
 {
-    public interface IFileWriter
+    public interface IRetentionCollection<T>
     {
-        void WriteFile(string FilePath, byte[] Content);
+        void InsertElement(T Element);
+
+        List<T> ExtractElementsOlderThan(double Seconds);
     }
 }

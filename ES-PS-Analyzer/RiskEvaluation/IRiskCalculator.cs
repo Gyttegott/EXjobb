@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ES_PS_analyzer.RiskEvaluation
 {
-    interface IRiskCalculator
+    public interface IRiskCalculator
     {
         double CalculateRisk(PSInfo CurrentCommand, PSInfo LastCommand);
     }

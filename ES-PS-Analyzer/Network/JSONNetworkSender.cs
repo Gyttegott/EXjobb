@@ -36,14 +36,14 @@ namespace ES_PS_analyzer.Network
             {
                 SendingClient.SendData(sarr);
             }
-            catch (ObjectDisposedException)
+            catch (Exception)
             {
                 try
                 {
                     SendingClient.Connect(DestinationAddress, DestinationPort);
                     SendingClient.SendData(sarr);
                 }
-                catch (ObjectDisposedException)
+                catch (Exception)
                 {
                     ErrorLogger.LogError(string.Format("Could not establish a connection to {0}:{1}", DestinationAddress, DestinationPort));
                     SendingQueue.Add(log);

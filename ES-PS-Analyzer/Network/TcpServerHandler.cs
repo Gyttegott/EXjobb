@@ -29,7 +29,8 @@ namespace ES_PS_analyzer.Network
 
         public void Connect(string Address, int Port)
         {
-            ConnectedPeer = Server.AcceptTcpClient();
+            if(ConnectedPeer == null || !ConnectedPeer.Connected)
+                ConnectedPeer = Server.AcceptTcpClient();
         }
 
         public void Disconnect()

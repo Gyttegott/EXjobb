@@ -12,5 +12,10 @@ namespace ES_PS_analyzer.Tools
         {
             return DateTime.Now;
         }
+
+        public DateTime Parse(string DateTimeString)
+        {
+            return DateTime.Parse(DateTimeString);
+        }
     }
 }

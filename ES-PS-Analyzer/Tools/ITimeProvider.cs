@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace ES_PS_analyzer.Tools
 {
-    interface ITimeProvider
+    public interface ITimeProvider
     {
         DateTime Now();
+
+        DateTime Parse(string DateTimeString);
     }
 }

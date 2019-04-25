@@ -12,6 +12,7 @@ namespace ES_PS_analyzer.RiskEvaluation
         //Time variables used for calculating extra factors for time of command execution
         private MathNet.Numerics.Interpolation.CubicSpline TimeInterpolator;
         private double StartHour;
+        private ICommandRiskCollection RiskLookup;
 
 
         /// <summary>
@@ -19,8 +20,10 @@ namespace ES_PS_analyzer.RiskEvaluation
         /// </summary>
         /// <param name="StartHour">The starting time of the workday given in hours of range (0, 24]</param>
         /// <param name="EndHour">The ending time of the workday given in hours of range (0, 24]</param>
-        public RiskCalculator(double StartHour, double EndHour)
+        public RiskCalculator(ICommandRiskCollection CommandRiskCollection, double StartHour, double EndHour)
         {
+            RiskLookup = CommandRiskCollection;
+
             //Force parameters to correct range
             StartHour = StartHour % 24;
             EndHour = EndHour % 24;
@@ -72,7 +75,7 @@ namespace ES_PS_analyzer.RiskEvaluation
             double CurrentTimeFactor = GetRiskTimeFactor(CurrentHour);
             Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Time factor for {0} is {1}.", CurrentCommand.timestamp.ToString("o"), CurrentTimeFactor));
             //Look up what risk the current command and its context has independently
-            double CommandBaseRisk = ProgramData.RiskLookupTable.getRisk(CurrentCommand);
+            double CommandBaseRisk = RiskLookup.GetBaseRisk(CurrentCommand);
             Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Base risk from previos value of {0} at {1} is {2}", BaseLine, LastCommand == null ? "never" : LastCommand.timestamp.ToString("o"), BaseLine));
             Debug.WriteLine(string.Format("[DEBUG] RiskCalculator: Risk for command '{0}' is {1}", CurrentCommand.powershell_command, CommandBaseRisk));
 

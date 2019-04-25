@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -48,9 +49,11 @@ namespace ES_PS_analyzer.RiskEvaluation
     class Mapping
     {
         // The command used
+        [DefaultValue("")]
         public string Command { get; set; }
 
         // The base risk a command has regardless of context
+        [DefaultValue(-1)]
         public double BaseRisk { get; set; }
 
         // A list of all criterias for additional risks inside the commands possible contexts
@@ -63,6 +66,7 @@ namespace ES_PS_analyzer.RiskEvaluation
     class CustomQuery
     {
         //What type of evaluation should be done
+        [DefaultValue("")]
         public string Type { get; set; }
 
         //What value the evaluation should use
@@ -70,9 +74,11 @@ namespace ES_PS_analyzer.RiskEvaluation
         public List<string> Value { get; set; }
 
         //Where to apply the evaluation
+        [DefaultValue("")]
         public string Location { get; set; }
 
         //How much extra risk a positive evaluation should give
+        [DefaultValue(0)]
         public double RiskAddition { get; set; }
 
         /// <summary>
@@ -129,7 +135,7 @@ namespace ES_PS_analyzer.RiskEvaluation
                     GetEvaluation = (needle, haystack) => Regex.IsMatch(haystack, needle, RegexOptions.IgnoreCase);
                     break;
                 default:
-                    throw new Exception("Mappings configuration error");
+                    throw new ArgumentException("Mappings configuration error");
             }
 
             //Assign delegate for retrieving the source for evaluation from a command context
@@ -139,7 +145,7 @@ namespace ES_PS_analyzer.RiskEvaluation
                     GetSource = x => x.powershell_parameters == null ? EmptyPara : x.powershell_parameters;
                     break;
                 default:
-                    throw new Exception("Mappings configuration error");
+                    throw new ArgumentException("Mappings configuration error");
             }
         }
     }
@@ -160,13 +166,13 @@ namespace ES_PS_analyzer.RiskEvaluation
         /// Default constructor
         /// <exception cref="System.Exception">Thrown when extra criterias in CommandRiskMappings.json are misconfigured</exception>
         /// </summary>
-        public RiskLookup()
+        public RiskLookup(Tools.IEntryContentWriter MappingsReader)
         {
             try
             {
                 RiskDict = new Dictionary<string, Mapping>();
                 //Deserialize configurations in file from json
-                RiskMappings = JsonConvert.DeserializeObject<List<Mapping>>(File.ReadAllText("CommandRiskMappings.json"));
+                RiskMappings = JsonConvert.DeserializeObject<List<Mapping>>(MappingsReader.ReadContentAsString("CommandRiskMappings.json"));
                 foreach(var mapping in RiskMappings)
                 {
                     //Hash all commands for quick configuration access later
@@ -186,6 +192,10 @@ namespace ES_PS_analyzer.RiskEvaluation
                         }
                     }
                 }
+            }
+            catch (JsonSerializationException e)
+            {
+                throw e;
             }
             catch (Exception e)
             {

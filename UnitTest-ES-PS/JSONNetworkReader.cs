@@ -24,7 +24,7 @@ namespace UnitTest_ES_PS
             mockNetwork.Setup(t => t.RetrieveData()).Returns(incBarr);
 
             Mock<ES_PS_analyzer.Tools.IErrorLogHandler> mockErrorLogger = new Mock<ES_PS_analyzer.Tools.IErrorLogHandler>();
-            Mock<ES_PS_analyzer.Tools.IFileWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IFileWriter>();
+            Mock<ES_PS_analyzer.Tools.IEntryContentWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IEntryContentWriter>();
 
             var obj = new ES_PS_analyzer.Network.JSONNetworkReader(coll, mockNetwork.Object, mockFileReader.Object, mockErrorLogger.Object, "10.10.10.12", 4500);
 
@@ -58,7 +58,7 @@ namespace UnitTest_ES_PS
             mockNetwork.Setup(t => t.RetrieveData()).Returns(incBarr);
 
             Mock<ES_PS_analyzer.Tools.IErrorLogHandler> mockErrorLogger = new Mock<ES_PS_analyzer.Tools.IErrorLogHandler>();
-            Mock<ES_PS_analyzer.Tools.IFileWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IFileWriter>();
+            Mock<ES_PS_analyzer.Tools.IEntryContentWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IEntryContentWriter>();
 
             var obj = new ES_PS_analyzer.Network.JSONNetworkReader(coll, mockNetwork.Object, mockFileReader.Object, mockErrorLogger.Object, "10.10.10.12", 4500);
 
@@ -95,7 +95,7 @@ namespace UnitTest_ES_PS
             mockNetwork.Setup(t => t.RetrieveData()).Returns(incBarr);
 
             Mock<ES_PS_analyzer.Tools.IErrorLogHandler> mockErrorLogger = new Mock<ES_PS_analyzer.Tools.IErrorLogHandler>();
-            Mock<ES_PS_analyzer.Tools.IFileWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IFileWriter>();
+            Mock<ES_PS_analyzer.Tools.IEntryContentWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IEntryContentWriter>();
 
             var obj = new ES_PS_analyzer.Network.JSONNetworkReader(coll, mockNetwork.Object, mockFileReader.Object, mockErrorLogger.Object, "10.10.10.12", 4500);
 
@@ -132,7 +132,7 @@ namespace UnitTest_ES_PS
             mockNetwork.Setup(t => t.RetrieveData()).Returns(incBarr);
 
             Mock<ES_PS_analyzer.Tools.IErrorLogHandler> mockErrorLogger = new Mock<ES_PS_analyzer.Tools.IErrorLogHandler>();
-            Mock<ES_PS_analyzer.Tools.IFileWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IFileWriter>();
+            Mock<ES_PS_analyzer.Tools.IEntryContentWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IEntryContentWriter>();
 
             var obj = new ES_PS_analyzer.Network.JSONNetworkReader(coll, mockNetwork.Object, mockFileReader.Object, mockErrorLogger.Object, "10.10.10.12", 4500);
 
@@ -148,7 +148,8 @@ namespace UnitTest_ES_PS
             mockErrorLogger.Verify(t => t.LogError(It.IsAny<string>()));
             mockErrorLogger.VerifyNoOtherCalls();
 
-            mockFileReader.Verify(t => t.WriteFile(It.IsAny<string>(), It.Is<byte[]>(x => x.SequenceEqual(incBarr))));
+            mockFileReader.Verify(t => t.WriteContent(It.IsAny<string>(), It.Is<byte[]>(x => x.SequenceEqual(incBarr))));
+            mockFileReader.Verify(t => t.GetStorageDescription(It.IsAny<string>()));
             mockFileReader.VerifyNoOtherCalls();
 
             Assert.IsTrue(!coll.TryTake(out parsedLog));
@@ -167,7 +168,7 @@ namespace UnitTest_ES_PS
             mockNetwork.Setup(t => t.RetrieveData()).Returns(incBarr);
 
             Mock<ES_PS_analyzer.Tools.IErrorLogHandler> mockErrorLogger = new Mock<ES_PS_analyzer.Tools.IErrorLogHandler>();
-            Mock<ES_PS_analyzer.Tools.IFileWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IFileWriter>();
+            Mock<ES_PS_analyzer.Tools.IEntryContentWriter> mockFileReader = new Mock<ES_PS_analyzer.Tools.IEntryContentWriter>();
 
             var obj = new ES_PS_analyzer.Network.JSONNetworkReader(coll, mockNetwork.Object, mockFileReader.Object, mockErrorLogger.Object, "10.10.10.12", 4500);
 
@@ -183,7 +184,8 @@ namespace UnitTest_ES_PS
             mockErrorLogger.Verify(t => t.LogError(It.IsAny<string>()));
             mockErrorLogger.VerifyNoOtherCalls();
 
-            mockFileReader.Verify(t => t.WriteFile(It.IsAny<string>(), It.Is<byte[]>(x => Encoding.ASCII.GetString(x) == "{\"hej\":2\n{\"hej\":3}")));
+            mockFileReader.Verify(t => t.WriteContent(It.IsAny<string>(), It.Is<byte[]>(x => Encoding.ASCII.GetString(x) == "{\"hej\":2\n{\"hej\":3}")));
+            mockFileReader.Verify(t => t.GetStorageDescription(It.IsAny<string>()));
             mockFileReader.VerifyNoOtherCalls();
 
             Assert.IsTrue(coll.TryTake(out parsedLog));

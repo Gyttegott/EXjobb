@@ -13,20 +13,20 @@ namespace ES_PS_analyzer.Network
         private BlockingCollection<JObject> IncomingQueue;
         private Network.INetworkHandler ReadingClient;
         private Tools.IErrorLogHandler ErrorLogger;
-        private Tools.IFileWriter FileWriter;
+        private Tools.IEntryContentWriter EntryWriter;
         private int ListeningPort;
         private string ListeningAddress;
 
         private TcpListener Server;
 
-        public JSONNetworkReader(BlockingCollection<JObject> queue, Network.INetworkHandler sender, Tools.IFileWriter writer, Tools.IErrorLogHandler error, string address, int port)
+        public JSONNetworkReader(BlockingCollection<JObject> OutputQueue, Network.INetworkHandler NetworkReader, Tools.IEntryContentWriter LogEntryWriter, Tools.IErrorLogHandler ErrorLogger, string Address, int Port)
         {
-            IncomingQueue = queue;
-            ListeningPort = port;
-            ListeningAddress = address;
-            ReadingClient = sender;
-            ErrorLogger = error;
-            FileWriter = writer;
+            IncomingQueue = OutputQueue;
+            ListeningPort = Port;
+            ListeningAddress = Address;
+            ReadingClient = NetworkReader;
+            this.ErrorLogger = ErrorLogger;
+            EntryWriter = LogEntryWriter;
         }
 
         public void ReadData()
@@ -54,9 +54,9 @@ namespace ES_PS_analyzer.Network
                 catch (Newtonsoft.Json.JsonReaderException)
                 {
                     Debug.WriteLine("Log entry failed parsing");
-                    string filename = string.Format(@"{0}.txt", Guid.NewGuid());
-                    ErrorLogger.LogError(string.Format("Parsing of incoming log failed, log content can be found in \"ParseErrors\\{0}\"", filename));
-                    FileWriter.WriteFile(string.Format("ParseErrors\\{0}.txt", filename), Encoding.ASCII.GetBytes(log));
+                    string id = Guid.NewGuid().ToString();
+                    EntryWriter.WriteContent(id, Encoding.ASCII.GetBytes(log));
+                    ErrorLogger.LogError(string.Format("Parsing of incoming log failed. {0}", EntryWriter.GetStorageDescription(id)));
                     continue;
                 }
                 //If the parsed command has not been configured, drop it, it does not impact the risk curve
@@ -82,8 +82,6 @@ namespace ES_PS_analyzer.Network
                 //Insert the parsed log into the incoming log pool
                 IncomingQueue.Add(ParsedLog);
             }
-
-            ReadingClient.Disconnect();
         }
     }
 
