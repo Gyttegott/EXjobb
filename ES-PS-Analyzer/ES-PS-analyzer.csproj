@@ -74,7 +74,6 @@
   <ItemGroup>
     <Compile Include="LogAggregator.cs" />
     <Compile Include="Network\TcpClientHandler.cs" />
-    <Compile Include="Tools\UTF8JSONReader.cs" />
     <Compile Include="Tools\UTF8TextFileEntryContentWriter.cs" />
     <Compile Include="Tools\UTF8TextFileErrorLogger.cs" />
     <Compile Include="Tools\IRetentionCollection.cs" />
