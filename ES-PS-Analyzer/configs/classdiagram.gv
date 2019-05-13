@@ -2,9 +2,9 @@ digraph hierarchy {
 nodesep="0.2"
 ranksep="0.2"
 ratio="compress"
-graph[autosize=false, size="5!", resolution=100, layout="dot"]
+graph[autosize=false, size="9,15!", resolution=100, outputorder=edgesfirst, fontsize=20]
 node[shape=record,style=filled,fillcolor=gray95]
-edge[dir=back, arrowtail=empty, weight=1.0]
+edge[dir=back, arrowtail=empty, arrowhead=empty weight=1.0]
 
 42[label = "{Mapping|+ Command : string\n+ BaseRisk : double\n+ RiskQueries : List\<CustomQuery\>|...}"]
 43[label = "{ProgramSettings|- dict: Dictionary\<string, string\>|+ ProgramSettings()\n+ getSetting(string): string}"]
@@ -118,12 +118,12 @@ INetworkHandler, IErrorLogHandler, string, int)\n
 3->8[arrowtail=onormal, style=dashed]
 6->7[arrowtail=onormal, style=dashed]
 6->5[arrowtail=onormal, style=dashed]
-17->18[arrowtail=onormal, style=dashed]
-19->20[arrowtail=onormal, style=dashed]
-19->21[arrowtail=onormal, style=dashed]
-16->15[arrowtail=onormal, style=dashed]
+18->17[arrowhead=onormal, dir=forward style=dashed]
+20->19[arrowtail=onormal, dir=forward style=dashed]
+21->19[arrowtail=onormal, dir=forward style=dashed]
+15->16[arrowtail=onormal, dir=forward style=dashed]
 26->24[arrowtail=onormal, style=dashed]
-23->25[arrowtail=onormal, style=dashed]
+25->23[arrowtail=onormal, dir=forward style=dashed]
 
 #Internal class
 22->24[arrowtail=vee, style=dashed]
