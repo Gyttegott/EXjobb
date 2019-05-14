@@ -115,7 +115,7 @@ namespace ES_PS_analyzer.RiskEvaluation
                 }
             }
 
-            return hits == Value.Count ? RiskAddition : 0;
+            return hits >= Value.Count ? RiskAddition : 0;
         }
 
         /// <summary>
