@@ -40,12 +40,6 @@
         "RiskQueries": [
             {
                 "Type": "regex",
-                "Value": "-Path.*\\\\Start Menu\\\\Programs\\\\Startup",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
                 "Value": "-Path.*C:\\\\Users$",
                 "Location": "parameter",
                 "RiskAddition": 2
@@ -93,83 +87,86 @@
     {
         "Command": "Add-Type",
         "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-AssemblyName.*System.Security",
-                "Location": "parameter",
-                "RiskAddition": 8
-            }
-        ]
+      "RiskQueries": [
+        /* source: PowerSPloit */
+        {
+          "Type": "regex",
+          "Value": "-AssemblyName.*System.Security",
+          "Location": "parameter",
+          "RiskAddition": 8
+        }
+      ]
     },
     {
         "Command": "Get-WmiObject",
         "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "Win32_Product",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_Process",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_ComputerSystem",
-                "Location": "parameter",
-                "RiskAddition": 5
-            },
-            {
-                "Type": "regex",
-                "Value": "^-Query SELECT.*AddressWidth.*FROM.*Win32_Processor",
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_Service",
-                "Location": "parameter",
-                "RiskAddition": 6
-            },
-            /* Indicates that extraction via shadow copies is performed by fetching all shadow copies, source: PowerSploit */
-            {
-                "Type": "regex",
-                "Value": "Win32_ShadowCopy",
-                "Location": "parameter",
-                "RiskAddition": 15
-            },
-            /* Indicates that a scrrenshot is being taken, source: PowerSploit */
-            {
-                "Type": "regex",
-                "Value": "^-Query SELECT.*VideoModeDescription.*FROM.*Win32_VideoController",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
+      "RiskQueries": [
+        {
+          "Type": "regex",
+          "Value": "Win32_Product",
+          "Location": "parameter",
+          "RiskAddition": 2
+        },
+        {
+          "Type": "regex",
+          "Value": "Win32_Process",
+          "Location": "parameter",
+          "RiskAddition": 2
+        },
+        /* source: PowerSPloit */
+        {
+          "Type": "regex",
+          "Value": "Win32_ComputerSystem",
+          "Location": "parameter",
+          "RiskAddition": 5
+        },
+        /* source: PowerSPloit */
+        {
+          "Type": "regex",
+          "Value": "^-Query SELECT.*AddressWidth.*FROM.*Win32_Processor",
+          "Location": "parameter",
+          "RiskAddition": 20
+        },
+        {
+          "Type": "regex",
+          "Value": "Win32_Service",
+          "Location": "parameter",
+          "RiskAddition": 6
+        },
+        /* Indicates that extraction via shadow copies is performed by fetching all shadow copies, source: PowerSploit */
+        {
+          "Type": "regex",
+          "Value": "Win32_ShadowCopy",
+          "Location": "parameter",
+          "RiskAddition": 15
+        },
+        /* Indicates that a scrrenshot is being taken, source: PowerSploit */
+        {
+          "Type": "regex",
+          "Value": "^-Query SELECT.*VideoModeDescription.*FROM.*Win32_VideoController",
+          "Location": "parameter",
+          "RiskAddition": 20
+        }
+      ]
     },
-    {
-        "Command": "Set-ExecutionPolicy",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-ExecutionPolicy.*Bypass",
-                "Location": "parameter",
-                "RiskAddition": 8
-            },
-            {
-                "Type": "regex",
-                "Value": "-ExecutionPolicy.*Unrestricted",
-                "Location": "parameter",
-                "RiskAddition": 5
-            }
-        ]
-    },
+  /*{
+    "Command": "Set-ExecutionPolicy",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Bypass",
+        "Location": "parameter",
+        "RiskAddition": 8
+      },
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Unrestricted",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },*/
     {
         "Command": "Get-Service",
         "BaseRisk": 4,
