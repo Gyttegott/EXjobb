@@ -2,22 +2,34 @@ digraph hierarchy {
 nodesep="0.2"
 ranksep="0.2"
 ratio="compress"
-graph[autosize=false, size="9,15!", resolution=100, outputorder=edgesfirst, fontsize=20]
+graph[autosize=false, size="9,15!", resolution=100, fontsize=20]
 node[shape=record,style=filled,fillcolor=gray95]
 edge[dir=back, arrowtail=empty, arrowhead=empty weight=1.0]
 
-42[label = "{Mapping|+ Command : string\n+ BaseRisk : double\n+ RiskQueries : List\<CustomQuery\>|...}"]
-43[label = "{ProgramSettings|- dict: Dictionary\<string, string\>|+ ProgramSettings()\n+ getSetting(string): string}"]
-44[label = "{RiskLookup|- RiskDict: Dictionary\<string, Mapping\>\n- RiskMappings: List\<Mapping\>| + RiskLookup(string)\n+ GetBaseRisk(PSInfo): double\n+ CommandExists(string): bool}"]
-45[label = "{CustomQuery|+ Type: string\m+ Value: List\<string\>\n+ Location: string\n+ RiskAddition: double\n- GetSource: Func\<PSInfo, string[]\>\n- GetEvaluation: Func\<string, string, bool\>|+ GetAdditionalRisk(PSInfo): double\n+ ConstructQueryWorkflow(): void}"]
-46[label = "{\<\<Interface\>\>\nICommandRiskCollection|...|+ GetBaseRisk(PSInfo): double\n+ CommandExists(string): bool}"]
-3[label = "{\<\<Interface\>\>\nIRiskCalculator|...|+ CalculateRisk(PSInfo, PSInfo): double}"]
-4[label = "{PSDoc|+ Id: string\n+ Source: PSInfo|...}"]
-5[label = "{ElasticsearchQuerier|- Client: ElasticLowLevelClient|+ ElasticsearchQuerier(string)\n+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo)}"]
-6[label = "{\<\<Interface\>\>\nICommandCache|...|+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo): void}"]
-7[label = "{CacheManager|- CommandCache: Dictionary\<string, PSInfo\>\n - CommandCacheLock: object|+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo): void}"]
-8[label = "{RiskCalculator|- TimeInterpolator: MathNet.Numerics.Interpolation.CubicSpline\n- StartHour: double\n- RiskLookup: ICommandRiskCollection|+ RiskCalculator(ICommandRiskCollection, double, double)\n- GetRiskTimeFactor(double): double\n+ CalculateRisk(PSInfo, PSInfo): double\n- GetPreviousRiskContribution(double, double): double}"]
-9[label = "{PSInfo|+ powershell_script_name: string\n+ powershell_command: string\n+ powershell_host_application: string\n+ powershell_parameters: string[]\n+ timestamp: DateTime\n+ powershell_risk: double\n+ computer_name: string|...}"]
+42[label = "{Mapping|
++ Command : string\n+ BaseRisk : double\n+ RiskQueries : List\<CustomQuery\>|...}"]
+43[label = "{ProgramSettings|
+- dict: Dictionary\<string, string\>|+ ProgramSettings()\n+ getSetting(string): string}"]
+44[label = "{RiskLookup|
+- RiskDict: Dictionary\<string, Mapping\>\n- RiskMappings: List\<Mapping\>| + RiskLookup(string)\n+ GetBaseRisk(PSInfo): double\n+ CommandExists(string): bool}"]
+45[label = "{CustomQuery|
++ Type: string\m+ Value: List\<string\>\n+ Location: string\n+ RiskAddition: double\n- GetSource: Func\<PSInfo, string[]\>\n- GetEvaluation: Func\<string, string, bool\>|+ GetAdditionalRisk(PSInfo): double\n+ ConstructQueryWorkflow(): void}"]
+46[label = "{\<\<Interface\>\>\nICommandRiskCollection|
+...|+ GetBaseRisk(PSInfo): double\n+ CommandExists(string): bool}"]
+3[label = "{\<\<Interface\>\>\nIRiskCalculator|
+...|+ CalculateRisk(PSInfo, PSInfo): double}"]
+4[label = "{PSDoc|
++ Id: string\n+ Source: PSInfo|...}"]
+5[label = "{ElasticsearchQuerier|
+- Client: ElasticLowLevelClient|+ ElasticsearchQuerier(string)\n+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo)}"]
+6[label = "{\<\<Interface\>\>\nICommandCache|
+...|+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo): void}"]
+7[label = "{CacheManager|
+- CommandCache: Dictionary\<string, PSInfo\>\n - CommandCacheLock: object|+ GetLastCommand(string): Task\<PSInfo\>\n+ SetLastCommand(string, PSInfo): void}"]
+8[label = "{RiskCalculator|
+- TimeInterpolator: MathNet.Numerics.Interpolation.CubicSpline\n- StartHour: double\n- RiskLookup: ICommandRiskCollection|+ RiskCalculator(ICommandRiskCollection, double, double)\n- GetRiskTimeFactor(double): double\n+ CalculateRisk(PSInfo, PSInfo): double\n- GetPreviousRiskContribution(double, double): double}"]
+9[label = "{PSInfo|
++ powershell_script_name: string\n+ powershell_command: string\n+ powershell_host_application: string\n+ powershell_parameters: string[]\n+ timestamp: DateTime\n+ powershell_risk: double\n+ computer_name: string|...}"]
 10[label = "{LogAggregator|
 - IncomingQueue: BlockingCollection\<JObject\>\n
 - OutgoingQueue: BlockingCollection\<JObject\>\n
@@ -69,18 +81,30 @@ string, int)\n
 INetworkHandler, IErrorLogHandler, string, int)\n
 + SendLog(): void}"]
 
-15[label = "{UTF8TextFileEntryContentWriter|- StoragePath: string|+ UTF8TextFileEntryContentWriter(string)\n+ WriteContent(string, byte[]): void\n+ WriteContent(string, string): void\n+ ReadContent(string): byte[]\n+ ReadContentAsString(string): string\n+ GetStorageDescription(string): string}"]
-16[label = "{\<\<Interface\>\>\nIEntryContentWriter|...|+ WriteContent(string, byte[]): void\n+ WriteContent(string, string): void\n+ ReadContent(string): byte[]\n+ ReadContentAsString(string): string\n+ GetStorageDescription(string): string}"]
-17[label = "{\<\<Interface\>\>\nIErrorLogHandler|+ text\n+ root|...}"]
-18[label = "{UTF8TextFileErrorLogger|...|+ LogError(string): void}"]
-19[label = "{\<\<Interface\>\>\nINetworkHandler|...|+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
-20[label = "{TcpClientHandler|- Client: TcpClient|+ TcpClientHandler()\n+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
-21[label = "{TcpServerHandler|- Server: TcpListener\n- ConnectedPeer: TcpClient\n- ReceiveBuffer: byte[]|+ TcpServerHandler(IPAddres, int, int)\n+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
-22[label = "{TimeStampedElement\<T\>|+ Element: T\n + TimeStamp: DateTime|...}"]
-23[label = "{\<\<Interface\>\>\nITimeProvider|...|+ Now(): DateTime\n+ Parse(string): DateTime}"]
-24[label = "{RetentionCollection\<T\>|- ElementList: List\<TimeStampedElement\<T\>\>\n- TimeProvider: ITimeProvider\n- ElementTimeStamper: Func\<T, DateTime\>|+ RetentionCollection(ITimeProvider, Func\<T, string\>)\n+ InsertElement(T): void\n+ ExtractElementsOlderThan(double): List\<T\>}"]
-25[label = "{DateTimeProvider|...|+ Now(): DateTime\n+ Parse(string): DateTime}"]
-26[label = "{\<\<Interface\>\>\nIRetentionCollection\<T\>|...|+ InsertElement(T): void\n+ ExtractElementsOlderThan(double): List\<T\>}"]
+15[label = "{UTF8TextFileEntryContentWriter|
+- StoragePath: string|+ UTF8TextFileEntryContentWriter(string)\n+ WriteContent(string, byte[]): void\n+ WriteContent(string, string): void\n+ ReadContent(string): byte[]\n+ ReadContentAsString(string): string\n+ GetStorageDescription(string): string}"]
+16[label = "{\<\<Interface\>\>\nIEntryContentWriter|
+...|+ WriteContent(string, byte[]): void\n+ WriteContent(string, string): void\n+ ReadContent(string): byte[]\n+ ReadContentAsString(string): string\n+ GetStorageDescription(string): string}"]
+17[label = "{\<\<Interface\>\>\nIErrorLogHandler|
+...|LogError(string): void}"]
+18[label = "{UTF8TextFileErrorLogger|
+...|+ LogError(string): void}"]
+19[label = "{\<\<Interface\>\>\nINetworkHandler|
+...|+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
+20[label = "{TcpClientHandler|
+- Client: TcpClient|+ TcpClientHandler()\n+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
+21[label = "{TcpServerHandler|
+- Server: TcpListener\n- ConnectedPeer: TcpClient\n- ReceiveBuffer: byte[]|+ TcpServerHandler(IPAddres, int, int)\n+ Connect(string, int): void\n+ Disconnect(): void\n+ SendData(byte[]): void\n+ RetrieveData(): byte[]}"]
+22[label = "{TimeStampedElement\<T\>|
++ Element: T\n + TimeStamp: DateTime|...}"]
+23[label = "{\<\<Interface\>\>\nITimeProvider|
+...|+ Now(): DateTime\n+ Parse(string): DateTime}"]
+24[label = "{RetentionCollection\<T\>|
+- ElementList: List\<TimeStampedElement\<T\>\>\n- TimeProvider: ITimeProvider\n- ElementTimeStamper: Func\<T, DateTime\>|+ RetentionCollection(ITimeProvider, Func\<T, string\>)\n+ InsertElement(T): void\n+ ExtractElementsOlderThan(double): List\<T\>}"]
+25[label = "{DateTimeProvider|
+...|+ Now(): DateTime\n+ Parse(string): DateTime}"]
+26[label = "{\<\<Interface\>\>\nIRetentionCollection\<T\>|
+...|+ InsertElement(T): void\n+ ExtractElementsOlderThan(double): List\<T\>}"]
 
 # Dependency 5->5[arrowtail=vee, style=dashed]
 
@@ -101,8 +125,10 @@ INetworkHandler, IErrorLogHandler, string, int)\n
 9->12[arrowtail=vee, style=dashed]
 3->12[arrowtail=vee, style=dashed]
 6->12[arrowtail=vee, style=dashed]
-17->12[arrowtail=vee, style=dashed]
-16->12[arrowtail=vee, style=dashed]
+#17->12[arrowtail=vee, style=dashed]
+17->12[arrowhead=vee, dir=forward, style=dashed]
+#16->12[arrowtail=vee, style=dashed]
+12->16[arrowhead=vee, dir=forward, style=dashed]
 17->10[arrowtail=vee, style=dashed]
 16->10[arrowtail=vee, style=dashed]
 26->10[arrowtail=vee, style=dashed]
@@ -118,12 +144,12 @@ INetworkHandler, IErrorLogHandler, string, int)\n
 3->8[arrowtail=onormal, style=dashed]
 6->7[arrowtail=onormal, style=dashed]
 6->5[arrowtail=onormal, style=dashed]
-18->17[arrowhead=onormal, dir=forward style=dashed]
-20->19[arrowtail=onormal, dir=forward style=dashed]
-21->19[arrowtail=onormal, dir=forward style=dashed]
-15->16[arrowtail=onormal, dir=forward style=dashed]
+18->17[arrowtail=onormal, dir=forward, style=dashed]
+20->19[arrowtail=onormal, dir=forward, style=dashed]
+21->19[arrowtail=onormal, dir=forward, style=dashed]
+16->15[arrowtail=onormal, style=dashed]
 26->24[arrowtail=onormal, style=dashed]
-25->23[arrowtail=onormal, dir=forward style=dashed]
+23->25[arrowtail=onormal, style=dashed]
 
 #Internal class
 22->24[arrowtail=vee, style=dashed]
