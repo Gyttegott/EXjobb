@@ -530,6 +530,30 @@
       }
     ]
   },
+  {
+    "Command": "Set-MpPreference",
+    "BaseRisk": 90,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-DisableRealtimeMonitoring True$",
+        "Location": "parameter",
+        "RiskAddition": 100
+      }
+    ]
+  },
+  {
+    "Command": "Get-ItemProperty",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-Path Windows\\\\CurrentVersion\\\\Uninstall",
+        "Location": "parameter",
+        "RiskAddition": 8
+      }
+    ]
+  },
   /*  source: PowerSploit */
   {
     "Command": "Invoke-WmiMethod",
@@ -872,20 +896,38 @@
     ]
   },
   {
-    "Command": "wmic",
-    "BaseRisk": 4.37,
+    "Command": "sc",
+    "BaseRisk": 15,
     "RiskQueries": [
       {
         "Type": "regex",
-        "Value": "^service$",
+        "Value": "^query$",
         "Location": "parameter",
         "RiskAddition": 15
       },
       {
         "Type": "regex",
-        "Value": "^startup$",
+        "Value": "^qc$",
         "Location": "parameter",
-        "RiskAddition": 12.5
+        "RiskAddition": 40
+      }
+    ]
+  },
+  {
+    "Command": "msiexec",
+    "BaseRisk": 5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/quiet$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "^/qn$",
+        "Location": "parameter",
+        "RiskAddition": 20
       }
     ]
   },
