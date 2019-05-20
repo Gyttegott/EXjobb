@@ -18,769 +18,964 @@
   ]
 */
 [
-    {
-        "Command": "Get-LocalGroup",
-        "BaseRisk": 2
-    },
-    {
-        "Command": "Get-LocalGroupMember",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-Name[ \"]*(A|a)dmin",
-                "Location": "parameter",
-                "RiskAddition": 4
-            }
-        ]
-    },
-    {
-        "Command": "Get-ChildItem",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-Path.*\\\\Start Menu\\\\Programs\\\\Startup",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "-Path.*C:\\\\Users$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "-Include.*web.config",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "-Path.*Program Files",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "-Path.*Registry::.*Software",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "-Path.*Startup",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            /* Indicates that someone is handling memory dump files */
-            {
-                "Type": "regex",
-                "Value": "-Path.*\\.dmp",
-                "Location": "parameter",
-                "RiskAddition": 15
-            },
-            /* Indicates that someone is searching DCs for passwords for example, source: PowerSPloit */
-            {
-                "Type": "regex",
-                "Value": "-Path.*\\\\SYSVOL",
-                "Location": "parameter",
-                "RiskAddition": 30
-            }
-        ]
-    },
-    {
-        "Command": "Add-Type",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-AssemblyName.*System.Security",
-                "Location": "parameter",
-                "RiskAddition": 8
-            }
-        ]
-    },
-    {
-        "Command": "Get-WmiObject",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "Win32_Product",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_Process",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_ComputerSystem",
-                "Location": "parameter",
-                "RiskAddition": 5
-            },
-            {
-                "Type": "regex",
-                "Value": "^-Query SELECT.*AddressWidth.*FROM.*Win32_Processor",
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                "Type": "regex",
-                "Value": "Win32_Service",
-                "Location": "parameter",
-                "RiskAddition": 6
-            },
-            /* Indicates that extraction via shadow copies is performed by fetching all shadow copies, source: PowerSploit */
-            {
-                "Type": "regex",
-                "Value": "Win32_ShadowCopy",
-                "Location": "parameter",
-                "RiskAddition": 15
-            },
-            /* Indicates that a scrrenshot is being taken, source: PowerSploit */
-            {
-                "Type": "regex",
-                "Value": "^-Query SELECT.*VideoModeDescription.*FROM.*Win32_VideoController",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
-    },
-    {
-        "Command": "Set-ExecutionPolicy",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "-ExecutionPolicy.*Bypass",
-                "Location": "parameter",
-                "RiskAddition": 8
-            },
-            {
-                "Type": "regex",
-                "Value": "-ExecutionPolicy.*Unrestricted",
-                "Location": "parameter",
-                "RiskAddition": 5
-            }
-        ]
-    },
-    {
-        "Command": "Get-Service",
-        "BaseRisk": 4,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-Name.*VSS",
-                "Location": "parameter",
-                "RiskAddition": 10
-            }
-        ]
-    },
-    {
-        "Command": "Stop-Service",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-Name.*VSS",
-                "Location": "parameter",
-                "RiskAddition": 10
-            }
-        ]
-    },
-    {
-        "Command": "Get-ScheduledTask",
-        "BaseRisk": 4
-    },
-    {
-        "Command": "Get-PSDrive",
-        "BaseRisk": 4
-    },
-    {
-        "Command": "Get-Process",
-        "BaseRisk": 5
-    },
-    {
-        "Command": "Select-String",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-Path.*Firefox\\\\Profiles",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": "-Path.*Chrome\\\\User Data",
-                "Location": "parameter",
-                "RiskAddition": 10
-            }
-        ]
-    },
-    {
-        "Command": "Invoke-WebRequest",
-        "BaseRisk": 20,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-UseDefaultCredentials",
-                "Location": "parameter",
-                "RiskAddition": 30
-            }
-        ]
-    },
-    {
-        "Command": "Write-Output",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                /* Indicates that a function is returning a integer address pointer, source: PowerSploit */
-                "Type": "regex",
-                "Value": "^-InputObject \\d{10,}",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
-    },
-    {
-        "Command": "Invoke-Expression",
-        "BaseRisk": 20
-    },
-    {
-        "Command": "Join-Path",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
-                "Type": "regex",
-                "Value": "^-ChildPath.*HarddiskVolumeShadowCopy",
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                /* Indicates that handling of a memory dump takes place, source: PowerSploit */
-                "Type": "regex",
-                "Value": "^-ChildPath.*\\.dmp",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
-    },
-    {
-        "Command": "Test-Path",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
-                "Type": "regex",
-                "Value": "^-Path.*HarddiskVolumeShadowCopy",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
-    },
-    {
-        "Command": "Get-Item",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
-                "Type": "regex",
-                "Value": "^-Path.*HarddiskVolumeShadowCopy",
-                "Location": "parameter",
-                "RiskAddition": 20
-            }
-        ]
-    },
-    {
-        "Command": "Export-Clixml",
-        "BaseRisk": 20
-    },
-    {
-        "Command": "Get-Date",
-        "BaseRisk": 2
-    },
-    {
-        "Command": "Start-Sleep",
-        "BaseRisk": 2
-    },
-    {
-        "Command": "Import-Clixml",
-        "BaseRisk": 20
-    },
-    {
-        "Command": "Select-Xml",
-        "BaseRisk": 20
-    },
-    {
-        "Command": "New-Object",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-ArgumentList.*Chrome\\\\User Data",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": "^-TypeName.*Windows\\.Security\\.Credentials\\.PasswordVault",
-                "Location": "parameter",
-                "RiskAddition": 50
-            },
-            {
-                "Type": "regex",
-                "Value": "^-TypeName.*Net\\.Networkinformation\\.Ping",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": "^-TypeName.*Net\\.Sockets\\.TcpClient",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-TypeName.*DirectoryServices\\.DirectoryEntry", "^-ArgumentList.*LDAP://" ],
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-TypeName.*IntPtr" ],
-                "Location": "parameter",
-                "RiskAddition": 3
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-TypeName.*Runtime\\.InteropServices\\.HandleRef" ],
-                "Location": "parameter",
-                "RiskAddition": 7
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-TypeName.*Reflection\\.AssemblyName" ],
-                "Location": "parameter",
-                "RiskAddition": 7
-            },
-            {
-                "Value": "^-TypeName.*Reflection\\.Emit\\.CustomAttributeBuilder",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 1
-            },
-            {
-                "Value": [ "^-TypeName.*Reflection\\.Emit\\.CustomAttributeBuilder", "wtsapi32|advapi32|netapi32|kernel32" ],
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 5
-            },
-            {
-                "Value": "^-TypeName Hashtable\\[\\]",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 1
-            },
-            /* Indicates creating version objects for comparison of for example OS version, source: PowerSploit */
-            {
-                "Value": "^-TypeName Version",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 3
-            },
-            /* Creating a stream to read or write files on the system*/
-            {
-                "Value": "^-TypeName.*IO\\.FileStream",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 5
-            },
-            /* Indicates that reading or writing of a memory dump file takes place, source: Powersploit*/
-            {
-                "Value": [ "^-TypeName.*IO\\.FileStream", "^-ArgumentList.*\\.dmp" ],
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            /* Indicates that logon tokens are enumerated to create new processes, source: Powersploit*/
-            {
-                "Value": [ "^-TypeName.*Security.Principal.SecurityIdentifier", "^-ArgumentList LocalSystemSid" ],
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            /* Indicates that a screenshot is being taken, source: Powersploit*/
-            {
-                "Value": "^-TypeName.*Drawing\\.Size",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            /* Indicates that a screenshot is being taken, source: Powersploit*/
-            {
-                "Value": "^-TypeName.*Drawing\\.Bitmap",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            /* Indicates that a screenshot is being taken, source: Powersploit*/
-            {
-                "Value": "^-TypeName.*Drawing\\.Point",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Value": "^-TypeName.*Security\\.Cryptography",
-                "Type": "regex",
-                "Location": "parameter",
-                "RiskAddition": 10
-            }
-        ]
-    },
-    {
-        "Command": "Where-Object",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^-FilterScript.*Equals\\(.*System.dll.*\\)",
-                "Location": "parameter",
-                "RiskAddition": 40
-            },
-            /* Indicates that a shadow volume copy for extraction of data is being selected for deletion, source: PowerSploit */
-            {
-                "Type": "regex",
-                "Value": "^-InputObject.*Win32_ShadowCopy\\.ID",
-                "Location": "parameter",
-                "RiskAddition": 40
-            }
-        ]
-    },
-    {
-        "Command": "Enter-PSSession",
-        "BaseRisk": 50
-    },
-    {
-        "Command": "Invoke-WmiMethod",
-        "BaseRisk": 20,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*CreateKey", "^-Class.*StdRegProv" ],
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*CheckAccess", "^-Class.*StdRegProv" ],
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*GetStringValue", "^-Class.*StdRegProv" ],
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*SetStringValue", "^-Class.*StdRegProv" ],
-                "Location": "parameter",
-                "RiskAddition": 10
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*DeleteValue", "^-Class.*StdRegProv" ],
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*Create", "^-Class.*Win32_Process" ],
-                "Location": "parameter",
-                "RiskAddition": 20
-            },
-            {
-                "Type": "regex",
-                "Value": [ "^-Name.*Create", "^-Class.*Win32_Process", "powershell.exe.*-EncodedCommand" ],
-                "Location": "parameter",
-                "RiskAddition": 30
-            },
-            {
-                "Type": "regex",
-                "Value": "^-ComputerName ((?!localhost).)*$",
-                "Location": "parameter",
-                "RiskAddition": 30
-            }
-        ]
-    },
-    {
-        "Command": "systeminfo",
-        "BaseRisk": 2
-    },
-    {
-        "Command": "ipconfig",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^/all$",
-                "Location": "parameter",
-                "RiskAddition": 4
-            }
-        ]
-    },
-    {
-        "Command": "reg",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "query",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "password",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "PowerShellVersion",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "Windows.*Run",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "AlwaysInstallElevated",
-                "Location": "parameter",
-                "RiskAddition": 18
-            },
-            {
-                "Type": "regex",
-                "Value": "Terminal Server Client",
-                "Location": "parameter",
-                "RiskAddition": 8
-            }
-        ]
-    },
-    {
-        "Command": "net",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^user$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "^accounts$",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "^Administrat(o|ö)r$",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "^start$",
-                "Location": "parameter",
-                "RiskAddition": 4
-            }
-        ]
-    },
-    {
-        "Command": "whoami",
-        "BaseRisk": 1,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^/all$",
-                "Location": "parameter",
-                "RiskAddition": 5
-            }
-        ]
-    },
-    {
-        "Command": "findstr",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^/.*s",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "^/.*i",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "^password$",
-                "Location": "parameter",
-                "RiskAddition": 6
-            },
-            {
-                "Type": "regex",
-                "Value": "system32",
-                "Location": "parameter",
-                "RiskAddition": 3
-            },
-            {
-                "Type": "regex",
-                "Value": "binary_path_name",
-                "Location": "parameter",
-                "RiskAddition": 4
-            },
-            {
-                "Type": "regex",
-                "Value": "service_name",
-                "Location": "parameter",
-                "RiskAddition": 4
-            }
-        ]
-    },
-    {
-        "Command": "dir",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "pass",
-                "Location": "parameter",
-                "RiskAddition": 3
-            },
-            {
-                "Type": "regex",
-                "Value": "cred",
-                "Location": "parameter",
-                "RiskAddition": 3
-            },
-            {
-                "Type": "regex",
-                "Value": "config",
-                "Location": "parameter",
-                "RiskAddition": 3
-            }
-        ]
-    },
-    {
-        "Command": "tasklist",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "eq system",
-                "Location": "parameter",
-                "RiskAddition": 2
-            }
-        ]
-    },
-    {
-        "Command": "sc",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^query$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "^qc$",
-                "Location": "parameter",
-                "RiskAddition": 6
-            }
-        ]
-    },
-    {
-        "Command": "wmic",
-        "BaseRisk": 2,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^service$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "^startup$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            }
-        ]
-    },
-    {
-        "Command": "schtasks",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^/query$",
-                "Location": "parameter",
-                "RiskAddition": 2
-            },
-            {
-                "Type": "regex",
-                "Value": "^/create$",
-                "Location": "parameter",
-                "RiskAddition": 50
-            }
-        ]
-    },
-    {
-        "Command": "icacls",
-        "BaseRisk": 10
-    },
-    {
-        "Command": "nslookup",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
-                "Location": "parameter",
-                "RiskAddition": 1
-            }
-        ]
-    },
-    {
-        "Command": "ping",
-        "BaseRisk": 0,
-        "RiskQueries": [
-            {
-                "Type": "regex",
-                "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
-                "Location": "parameter",
-                "RiskAddition": 1
-            }
-        ]
-    }
+  {
+    "Command": "Get-LocalGroup",
+    "BaseRisk": 2.85
+  },
+  {
+    "Command": "Get-LocalGroupMember",
+    "BaseRisk": 2.85,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-Group[ \"]*(A|a)dmin",
+        "Location": "parameter",
+        "RiskAddition": 5.7
+      }
+    ]
+  },
+  {
+    "Command": "Get-ChildItem",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-Path.*C:\\\\Users$",
+        "Location": "parameter",
+        "RiskAddition": 2.85
+      },
+      {
+        "Type": "regex",
+        "Value": "-Include.*web.config",
+        "Location": "parameter",
+        "RiskAddition": 25
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Program Files",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Registry::.*Software",
+        "Location": "parameter",
+        "RiskAddition": 8
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Startup",
+        "Location": "parameter",
+        "RiskAddition": 12.5
+      },
+      {
+        "Type": "regex",
+        "Value": "-Force.*True",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      /* Indicates that someone is handling memory dump files */
+      {
+        "Type": "regex",
+        "Value": "-Path.*\\.dmp",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      /* Indicates that someone is searching DCs for passwords for example, source: PowerSPloit */
+      {
+        "Type": "regex",
+        "Value": "-Path.*\\\\SYSVOL",
+        "Location": "parameter",
+        "RiskAddition": 30
+      }
+    ]
+  },
+  {
+    "Command": "Add-Type",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      /* source: PowerSPloit */
+      {
+        "Type": "regex",
+        "Value": "-AssemblyName.*System.Security",
+        "Location": "parameter",
+        "RiskAddition": 8
+      }
+    ]
+  },
+  {
+    "Command": "Get-WmiObject",
+    "BaseRisk": 5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "Win32_Product",
+        "Location": "parameter",
+        "RiskAddition": 6
+      },
+      {
+        "Type": "regex",
+        "Value": "Win32_Process",
+        "Location": "parameter",
+        "RiskAddition": 7.5
+      },
+      /* source: PowerSPloit */
+      {
+        "Type": "regex",
+        "Value": "Win32_ComputerSystem",
+        "Location": "parameter",
+        "RiskAddition": 5
+      },
+      /* source: PowerSPloit */
+      {
+        "Type": "regex",
+        "Value": "^-Query SELECT.*AddressWidth.*FROM.*Win32_Processor",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "Win32_Service",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      /* Indicates that extraction via shadow copies is performed by fetching all shadow copies, source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "Win32_ShadowCopy",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      /* Indicates that a scrrenshot is being taken, source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "^-Query SELECT.*VideoModeDescription.*FROM.*Win32_VideoController",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  /*{
+    "Command": "Set-ExecutionPolicy",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Bypass",
+        "Location": "parameter",
+        "RiskAddition": 8
+      },
+      {
+        "Type": "regex",
+        "Value": "-ExecutionPolicy.*Unrestricted",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },*/
+  {
+    "Command": "Get-Service",
+    "BaseRisk": 15,
+    "RiskQueries": [
+      /* source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "^-Name.*VSS",
+        "Location": "parameter",
+        "RiskAddition": 10
+      }
+    ]
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Stop-Service",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-Name.*VSS",
+        "Location": "parameter",
+        "RiskAddition": 10
+      }
+    ]
+  },
+  {
+    "Command": "Get-ScheduledTask",
+    "BaseRisk": 10
+  },
+  {
+    "Command": "Get-PSDrive",
+    "BaseRisk": 10
+  },
+  {
+    "Command": "Get-Process",
+    "BaseRisk": 7.5
+  },
+  {
+    "Command": "Select-String",
+    "BaseRisk": 2.22,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-Path.*Firefox\\\\Profiles",
+        "Location": "parameter",
+        "RiskAddition": 100
+      },
+      {
+        "Type": "regex",
+        "Value": "-Path.*Chrome\\\\User Data",
+        "Location": "parameter",
+        "RiskAddition": 100
+      }
+    ]
+  },
+  {
+    "Command": "Invoke-WebRequest",
+    "BaseRisk": 26.67,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-UseDefaultCredentials",
+        "Location": "parameter",
+        "RiskAddition": 45
+      }
+    ]
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Write-Output",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        /* Indicates that a function is returning a integer address pointer, source: PowerSploit */
+        "Type": "regex",
+        "Value": "^-InputObject \\d{10,}",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  {
+    "Command": "Invoke-Expression",
+    "BaseRisk": 26.67
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Join-Path",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
+        "Type": "regex",
+        "Value": "^-ChildPath.*HarddiskVolumeShadowCopy",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        /* Indicates that handling of a memory dump takes place, source: PowerSploit */
+        "Type": "regex",
+        "Value": "^-ChildPath.*\\.dmp",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  {
+    "Command": "Test-Path",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
+        "Type": "regex",
+        "Value": "^-Path.*HarddiskVolumeShadowCopy",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Get-Item",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        /* Indicates that a shadow volume copy for extraction of data is being set up, source: PowerSploit */
+        "Type": "regex",
+        "Value": "^-Path.*HarddiskVolumeShadowCopy",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Export-Clixml",
+    "BaseRisk": 20
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Get-Date",
+    "BaseRisk": 2
+  },
+  {
+    "Command": "Start-Sleep",
+    "BaseRisk": 5
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Import-Clixml",
+    "BaseRisk": 20
+  },
+  /* source: PowerSploit */
+  {
+    "Command": "Select-Xml",
+    "BaseRisk": 20
+  },
+  {
+    "Command": "New-Object",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-ArgumentList.*Chrome\\\\User Data",
+        "Location": "parameter",
+        "RiskAddition": 100
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*Windows\\.Security\\.Credentials\\.PasswordVault",
+        "Location": "parameter",
+        "RiskAddition": 100
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*Net\\.Networkinformation\\.Ping",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "^-TypeName.*Net\\.Sockets\\.TcpClient",
+        "Location": "parameter",
+        "RiskAddition": 25
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-TypeName.*DirectoryServices\\.DirectoryEntry", "^-ArgumentList.*LDAP://" ],
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      /* source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": [ "^-TypeName.*IntPtr" ],
+        "Location": "parameter",
+        "RiskAddition": 3
+      },
+      /* source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": [ "^-TypeName.*Runtime\\.InteropServices\\.HandleRef" ],
+        "Location": "parameter",
+        "RiskAddition": 7
+      },
+      /* source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": [ "^-TypeName.*Reflection\\.AssemblyName" ],
+        "Location": "parameter",
+        "RiskAddition": 7
+      },
+      /* source: PowerSploit */
+      {
+        "Value": "^-TypeName.*Reflection\\.Emit\\.CustomAttributeBuilder",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 1
+      },
+      /* source: PowerSploit */
+      {
+        "Value": [ "^-TypeName.*Reflection\\.Emit\\.CustomAttributeBuilder", "wtsapi32|advapi32|netapi32|kernel32" ],
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 5
+      },
+      /* source: PowerSploit */
+      {
+        "Value": "^-TypeName Hashtable\\[\\]",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 1
+      },
+      /* Indicates creating version objects for comparison of for example OS version, source: PowerSploit */
+      {
+        "Value": "^-TypeName Version",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 3
+      },
+      /* Creating a stream to read or write files on the system*/
+      {
+        "Value": "^-TypeName.*IO\\.FileStream",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 5
+      },
+      /* Indicates that reading or writing of a memory dump file takes place, source: Powersploit*/
+      {
+        "Value": [ "^-TypeName.*IO\\.FileStream", "^-ArgumentList.*\\.dmp" ],
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      /* Indicates that logon tokens are enumerated to create new processes, source: Powersploit*/
+      {
+        "Value": [ "^-TypeName.*Security.Principal.SecurityIdentifier", "^-ArgumentList LocalSystemSid" ],
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      /* Indicates that a screenshot is being taken, source: Powersploit*/
+      {
+        "Value": "^-TypeName.*Drawing\\.Size",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      /* Indicates that a screenshot is being taken, source: Powersploit*/
+      {
+        "Value": "^-TypeName.*Drawing\\.Bitmap",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      /* Indicates that a screenshot is being taken, source: Powersploit*/
+      {
+        "Value": "^-TypeName.*Drawing\\.Point",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Value": "^-TypeName.*Security\\.Cryptography",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      {
+        "Value": "^-TypeName.*.Automation\\.PSCredential",
+        "Type": "regex",
+        "Location": "parameter",
+        "RiskAddition": 7.14
+      }
+    ]
+  },
+  {
+    "Command": "Where-Object",
+    "BaseRisk": 0,
+    "RiskQueries": [
+      /*  source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "^-FilterScript.*Equals\\(.*System.dll.*\\)",
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      /* Indicates that a shadow volume copy for extraction of data is being selected for deletion, source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "^-InputObject.*Win32_ShadowCopy\\.ID",
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      {
+        "Type": "regex",
+        "Value": "^-FilterScript.*-notlike.*svchost",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "^-FilterScript.*-notlike.*Microsoft",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "^-FilterScript.*-notlike.*Windows",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "^-FilterScript.*-eq.*Auto",
+        "Location": "parameter",
+        "RiskAddition": 6.67
+      }
+    ]
+  },
+  {
+    "Command": "Enter-PSSession",
+    "BaseRisk": 50
+  },
+  {
+    "Command": "ConvertTo-SecureString",
+    "BaseRisk": 6,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-AsPlainText True$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      }
+    ]
+  },
+  {
+    "Command": "Set-MpPreference",
+    "BaseRisk": 90,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-DisableRealtimeMonitoring True$",
+        "Location": "parameter",
+        "RiskAddition": 100
+      }
+    ]
+  },
+  {
+    "Command": "Get-ItemProperty",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^-Path Windows\\\\CurrentVersion\\\\Uninstall",
+        "Location": "parameter",
+        "RiskAddition": 8
+      }
+    ]
+  },
+  /*  source: PowerSploit */
+  {
+    "Command": "Invoke-WmiMethod",
+    "BaseRisk": 20,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*CreateKey", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*CheckAccess", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*GetStringValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*SetStringValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*DeleteValue", "^-Class.*StdRegProv" ],
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*Create", "^-Class.*Win32_Process" ],
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": [ "^-Name.*Create", "^-Class.*Win32_Process", "powershell.exe.*-EncodedCommand" ],
+        "Location": "parameter",
+        "RiskAddition": 30
+      },
+      {
+        "Type": "regex",
+        "Value": "^-ComputerName ((?!localhost).)*$",
+        "Location": "parameter",
+        "RiskAddition": 30
+      }
+    ]
+  },
+  {
+    "Command": "systeminfo",
+    "BaseRisk": 6.67
+  },
+  {
+    "Command": "ipconfig",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/all$",
+        "Location": "parameter",
+        "RiskAddition": 3.75
+      }
+    ]
+  },
+  {
+    "Command": "reg",
+    "BaseRisk": 2.22,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "query",
+        "Location": "parameter",
+        "RiskAddition": 2.22
+      },
+      {
+        "Type": "regex",
+        "Value": "password",
+        "Location": "parameter",
+        "RiskAddition": 26.67
+      },
+      {
+        "Type": "regex",
+        "Value": "PowerShellEngine",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "Windows.*Run",
+        "Location": "parameter",
+        "RiskAddition": 12.5
+      },
+      {
+        "Type": "regex",
+        "Value": "AlwaysInstallElevated",
+        "Location": "parameter",
+        "RiskAddition": 23.33
+      },
+      {
+        "Type": "regex",
+        "Value": "Terminal Server Client",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "Currentversion\\\\Winlogon",
+        "Location": "parameter",
+        "RiskAddition": 6.67
+      },
+      {
+        "Type": "regex",
+        "Value": "Services\\\\SNMP",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      {
+        "Type": "regex",
+        "Value": "PuTTY",
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      {
+        "Type": "regex",
+        "Value": "RealVNC\\\\WinVNC4",
+        "Location": "parameter",
+        "RiskAddition": 20
+      },
+      {
+        "Type": "regex",
+        "Value": "^/s$",
+        "Location": "parameter",
+        "RiskAddition": 7.5
+      }
+    ]
+  },
+  {
+    "Command": "net",
+    "BaseRisk": 1,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^user$",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      {
+        "Type": "regex",
+        "Value": "^accounts$",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      {
+        "Type": "regex",
+        "Value": "^Administrat(o|ö)r$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "^start$",
+        "Location": "parameter",
+        "RiskAddition": 7.5
+      }
+    ]
+  },
+  {
+    "Command": "whoami",
+    "BaseRisk": 2.5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/all$",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },
+  {
+    "Command": "findstr",
+    "BaseRisk": 1,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/.*s",
+        "Location": "parameter",
+        "RiskAddition": 1.11
+      },
+      {
+        "Type": "regex",
+        "Value": "^/.*i",
+        "Location": "parameter",
+        "RiskAddition": 1.11
+      },
+      {
+        "Type": "regex",
+        "Value": "^password$",
+        "Location": "parameter",
+        "RiskAddition": 26.67
+      },
+      {
+        "Type": "regex",
+        "Value": "system32",
+        "Location": "parameter",
+        "RiskAddition": 12
+      },
+      {
+        "Type": "regex",
+        "Value": "binary_path_name",
+        "Location": "parameter",
+        "RiskAddition": 40
+      },
+      {
+        "Type": "regex",
+        "Value": "service_name",
+        "Location": "parameter",
+        "RiskAddition": 25
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.xml$",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.config$",
+        "Location": "parameter",
+        "RiskAddition": 7.14
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.ini$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "SSID Cipher Content",
+        "Location": "parameter",
+        "RiskAddition": 100
+      }
+    ]
+  },
+  {
+    "Command": "dir",
+    "BaseRisk": 2,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "pass",
+        "Location": "parameter",
+        "RiskAddition": 26.67
+      },
+      {
+        "Type": "regex",
+        "Value": "cred",
+        "Location": "parameter",
+        "RiskAddition": 26.67
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.xml",
+        "Location": "parameter",
+        "RiskAddition": 4.29
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.config",
+        "Location": "parameter",
+        "RiskAddition": 7.14
+      },
+      {
+        "Type": "regex",
+        "Value": "\\.ini",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "vnc",
+        "Location": "parameter",
+        "RiskAddition": 26.67
+      },
+      {
+        "Type": "regex",
+        "Value": "Startup",
+        "Location": "parameter",
+        "RiskAddition": 12.5
+      }
+    ]
+  },
+  {
+    "Command": "tasklist",
+    "BaseRisk": 7.5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "eq system",
+        "Location": "parameter",
+        "RiskAddition": 12
+      }
+    ]
+  },
+  {
+    "Command": "netsh",
+    "BaseRisk": 5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^wlan$",
+        "Location": "parameter",
+        "RiskAddition": 7.5
+      }
+    ]
+  },
+  {
+    "Command": "sc",
+    "BaseRisk": 15,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^query$",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      {
+        "Type": "regex",
+        "Value": "^qc$",
+        "Location": "parameter",
+        "RiskAddition": 40
+      }
+    ]
+  },
+  {
+    "Command": "sc",
+    "BaseRisk": 15,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^query$",
+        "Location": "parameter",
+        "RiskAddition": 15
+      },
+      {
+        "Type": "regex",
+        "Value": "^qc$",
+        "Location": "parameter",
+        "RiskAddition": 40
+      }
+    ]
+  },
+  {
+    "Command": "msiexec",
+    "BaseRisk": 5,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/quiet$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      {
+        "Type": "regex",
+        "Value": "^/qn$",
+        "Location": "parameter",
+        "RiskAddition": 20
+      }
+    ]
+  },
+  {
+    "Command": "schtasks",
+    "BaseRisk": 3.75,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^/query$",
+        "Location": "parameter",
+        "RiskAddition": 10
+      },
+      /* source: PowerSploit */
+      {
+        "Type": "regex",
+        "Value": "^/create$",
+        "Location": "parameter",
+        "RiskAddition": 50
+      }
+    ]
+  },
+  {
+    "Command": "icacls",
+    "BaseRisk": 23.33
+  },
+  {
+    "Command": "nslookup",
+    "BaseRisk": 1,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
+        "Location": "parameter",
+        "RiskAddition": 5
+      }
+    ]
+  },
+  {
+    "Command": "ping",
+    "BaseRisk": 1,
+    "RiskQueries": [
+      {
+        "Type": "regex",
+        "Value": "^172\\.(1[6-9]|2[0-9]|3[01])|^10\\.|^192\\.168\\.",
+        "Location": "parameter",
+        "RiskAddition": 3
+      }
+    ]
+  }
 ]

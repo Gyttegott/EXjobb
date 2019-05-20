@@ -18,8 +18,8 @@
 # visit the documentation for the complete details of each option.
 # https://go.es.io/WinlogbeatConfig
 winlogbeat.event_logs:
-  - name: Microsoft-Windows-PowerShell/Operational
-    event_id: 4103
+  - name: Windows PowerShell
+    event_id: 800
     ignore_older: 2h
   - name: Security
     event_id: 4688
